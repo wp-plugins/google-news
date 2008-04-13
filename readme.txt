@@ -27,16 +27,17 @@ This plugin works both as a widget and as inline content
 replacement. It can be used as both simultaneously, but
 all instances will show the same content.
 
+For widget use, simply use the widget as any other. For inline
+use, insert the string **&lt;!--google-news--&gt;** (i.e.
+<!--google-news-->) in your content and it will be replaced
+with the news.
+
 Short version: 
 
 Enable plugin, configure using either the Google News option
 on the Dashboard Settings page or the configuration box on
 the widget page. Both access and update the same settings, 
 you do not need to use one or the other. 
-
-For widget use, simply use the widget as any other. For inline
-use, insert the string **&lt;!--google-news--&gt;** in your 
-content and it will be replaced with the news.
 
 Long version:
 
@@ -46,6 +47,7 @@ there are two ways of updating the plugin configuration.
 Note that these ways are identical and you do not specifically
 have to use the confiuration box on the widgets page for
 the widget or vice versa.
+
 
 The available options are as follows. 
 
