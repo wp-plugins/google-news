@@ -1,7 +1,7 @@
 === Google News ===
 Contributors: Olav Kolbu
 Donate link: http://www.kolbu.com/
-Tags: widget, plugin, cnn, news, cnn news, rss, feed
+Tags: widget, plugin, google, news, google news, rss, feed
 Requires at least: 2.3.3
 Tested up to: 2.5
 Stable tag: trunk
