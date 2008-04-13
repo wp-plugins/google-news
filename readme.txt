@@ -35,7 +35,7 @@ the widget page. Both access and update the same settings,
 you do not need to use one or the other. 
 
 For widget use, simply use the widget as any other. For inline
-use, insert the string &lt;!--google-news--&gt; in your 
+use, insert the string **&lt;!--google-news--&gt;** in your 
 content and it will be replaced with the news.
 
 Long version:
@@ -49,24 +49,24 @@ the widget or vice versa.
 
 The available options are as follows. 
 
-Title: Optional, which when set will be used in the
+**Title:** Optional, which when set will be used in the
 widget title or as a header above the news items when 
 inline. If the title is empty, then a default title
 of "Google News : <region> : <feed type>" is used. Note
 that as per Google Terms of Service it is a requirement
 to state that the news come from Google.
 
-News region: A dropdown list of 40 choices, determining
+**News region:** A dropdown list of 40 choices, determining
 the region/language of the feed. 
 
-News type: Another dropdown list, determining what type of
+**News type:** Another dropdown list, determining what type of
 news you are after. Sci/Tech, Business, Health etc.
 
-Output type: Some Google feeds come with just text, 
+**Output type:** Some Google feeds come with just text, 
 some pictures or pictures on nearly every news item. Chose
 which one you want here.
 
-News item length: Short or long. The short version is really just 
+**News item length:** Short or long. The short version is really just 
 the news item title as a one liner but probably the one most 
 WP admins will use. The long version is a 3-4 line teaser that 
 has been severely stripped of useless markup that Google insists 
@@ -75,10 +75,10 @@ settings etc. I've tried to clean it up so it won't mess up your
 theme. For the short version, the long text without html tags is 
 available as a mouse rollover/tooltip.
 
-Max items to show: As the title says, if the feed has
+**Max items to show:** As the title says, if the feed has
 sufficient entries to fulfil the request. 
 
-Optional query filter: One of the most important parts of
+**Optional query filter:** One of the most important parts of
 the Google News RSS Feed is the ability to filter the news
 with your very own search query. Get relevant, up to date
 news on the exact topic you want. Note that if you add a
