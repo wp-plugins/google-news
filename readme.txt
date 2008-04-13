@@ -130,11 +130,11 @@ The screenshots section has a picture of the configuration page.
 
 == Changelog ==
 
-1.0 Initial release
-1.1 Removed dependency on PHP 5.1++ functionality.
+1. 1.0 Initial release
+1. 1.1 Removed dependency on PHP 5.1++ functionality.
     Fixed UTF8-related bugs. 
     - Not a public release.
-2.0 Rewritten from scratch. Now uses a class to avoid polluting the 
+1. 2.0 Rewritten from scratch. Now uses a class to avoid polluting the 
     name space. Hopefully adhering to best practices plugin writing.
     Can now be used both as a widget and as inline content replacement.
 
