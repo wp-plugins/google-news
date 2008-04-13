@@ -52,7 +52,7 @@ The available options are as follows.
 **Title:** Optional, which when set will be used in the
 widget title or as a header above the news items when 
 inline. If the title is empty, then a default title
-of "Google News : <region> : <feed type>" is used. Note
+of "Google News : &lt;region&gt; : &lt;feed type&gt;" is used. Note
 that as per Google Terms of Service it is a requirement
 to state that the news come from Google.
 
