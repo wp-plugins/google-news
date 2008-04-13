@@ -35,8 +35,8 @@ the widget page. Both access and update the same settings,
 you do not need to use one or the other. 
 
 For widget use, simply use the widget as any other. For inline
-use, insert the string <!--google-news--> in your content and
-it will be replaced with the news.
+use, insert the string &lt;!--google-news--&gt; in your 
+content and it will be replaced with the news.
 
 Long version:
 
@@ -124,7 +124,7 @@ The screenshots section has a picture of the configuration page.
 
 1. Widget in action under the Prosumer theme. Note the mouseover showing additional text from the news item.
 2. The admin options page of the widget.
-3. Inline example under the Prosumer theme, replacing <!--google-news--> in content.
+3. Inline example under the Prosumer theme, replacing &lt;!--google-news--&gt; in content.
 
 == Changelog ==
 
