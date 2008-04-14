@@ -2,7 +2,7 @@
 /*
 Plugin Name: Google News
 Description: Displays a selectable Google News RSS feed, inline or widget
-Version:     2.0 
+Version:     2.0.1 
 Author:      Olav Kolbu
 Author URI:  http://www.kolbu.com/
 Plugin URI:  http://wordpress.org/extend/plugins/google-news/
@@ -10,10 +10,6 @@ License:     GPL
 
 Some WordPress-specific code from various other GPL plugins.
 
-Fix short / long
-Fix numitems? Only shows 1
-Test old plugin then new
-Make sure all options work
 */
 /*
 Copyright (C) 2008 kolbu.com (olav AT kolbu DOT com)
@@ -109,7 +105,7 @@ if ( ! class_exists("google_news_plugin")) {
         function google_news_plugin() {
 
             // Form POSTs
-            if ( $_POST ) {
+            if ( $_POST && $_POST['google_news-submit'] ) {
                 $this->update_options($_POST);
                 $this->just_saved = 1;
             }
@@ -159,6 +155,7 @@ if ( ! class_exists("google_news_plugin")) {
                 // Clean up from earlier versions
                 $oldoptions = get_option('widget_google_news_widget');
                 if ( is_array($oldoptions) ) {
+                    $options = array();
                     $options['title']      = $oldoptions['title'];
                     $options['numnews']    = $oldoptions['numnews'];
                     $options['region']     = $oldoptions['region'];
@@ -313,7 +310,6 @@ if ( ! class_exists("google_news_plugin")) {
             } else {
                 $title = "Google News : ".$feedtype;
             }
-
             $feed = "<!-- Start Google News code -->\n<div id=\"google-news-inline\"><h3>$title</h4>\n";
             $feed .= $this->get_feed($region, $newstype, $outputtype, 
                                      $query, $numnews, $desctype);
@@ -373,7 +369,8 @@ if ( ! class_exists("google_news_plugin")) {
             echo $before_title . $title . $after_title;
             $GoogleFeed = $this->get_feed($region, $newstype, $outputtype, 
                                           $query, $numnews, $desctype);
-            echo '<div id="google-news-widget">'.$GoogleFeed.'</div>';
+            echo '<div style="margin-top:5px;text-align:left;">'.$GoogleFeed.'</
+div>';
             echo $after_widget;
 
         }

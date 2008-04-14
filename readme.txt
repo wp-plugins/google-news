@@ -137,4 +137,4 @@ The screenshots section has a picture of the configuration page.
 1. 2.0 Rewritten from scratch. Now uses a class to avoid polluting the 
     name space. Hopefully adhering to best practices plugin writing.
     Can now be used both as a widget and as inline content replacement.
-
+1. 2.0.1 Minor bugfix. Options were reset in some circumstances.
