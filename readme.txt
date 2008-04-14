@@ -1,6 +1,6 @@
 === Google News ===
 Contributors: Olav Kolbu
-Donate link: http://www.kolbu.com/
+Donate link: http://www.kolbu.com/donations/
 Tags: widget, plugin, google, news, google news, rss, feed
 Requires at least: 2.3.3
 Tested up to: 2.5
