@@ -2,14 +2,19 @@
 /*
 Plugin Name: Google News
 Description: Displays a selectable Google News RSS feed, inline or widget
-Version:     2.0.1 
+Version:     2.1
 Author:      Olav Kolbu
 Author URI:  http://www.kolbu.com/
 Plugin URI:  http://wordpress.org/extend/plugins/google-news/
 License:     GPL
 
-Some WordPress-specific code from various other GPL plugins.
+Minor parts of WordPress-specific code from various other GPL plugins.
 
+TODO: Multiple widget instances support (possibly)
+      Internationalize more output
+      See if nofollow should be added on links
+
+TOFIX: sporadic unserialized ?
 */
 /*
 Copyright (C) 2008 kolbu.com (olav AT kolbu DOT com)
@@ -28,91 +33,114 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-if ( ! class_exists("google_news_plugin")) {
+
+include_once(ABSPATH . WPINC . '/rss.php');
+
+if ( ! class_exists('google_news_plugin')) {
     class google_news_plugin {
 
-        private $regions = array(
-            "South Africa" => "en_za",
-            "&#20013;&#22269;&#29256; (China)" => "cn",
-            "&#39321;&#28207;&#29256; (Hong Kong)" => "hk",
-            "भारत (Hindi)" => "hi_in",
-            "India" => "in",
-            "&#26085;&#26412; (Japan)" => "jp",
-            "&#54620;&#44397; (Korea)" => "kr",
-            "&#21488;&#28771;&#29256; (Taiwan)" => "tw",
-            "&#1497;&#1513;&#1512;&#1488;&#1500; (Israel)" => "iw_il",
-            "&#1575;&#1604;&#1593;&#1575;&#1604;&#1605; &#1575;&#1604;&#1593;&#1585;&#1576;&#1610; (Arabic)" => "ar_me",
-            "&#1056;&#1086;&#1089;&#1089;&#1080;&#1103; (Russia)" => "ru_ru",
-            "Australia" => "au",
-            "New Zealand" => "nz",
-            "België" => "nl_be",
-            "Belgique" => "fr_be",
-            "Česká republika" => "cs_cz",
-            "Deutschland" => "de",
-            "España" => "es",
-            "France" => "fr",
-            "Greece" => "el_gr",
-            "Ireland" => "en_ie",
-            "Italia" => "it",
-            "Nederland" => "nl_nl",
-            "Norge" => "no_no",
-            "Österreich" => "de_at",
-            "Portugal" => "pt:PT_pt",
-            "Schweiz" => "de_ch",
-            "Suisse" => "fr_ch",
-            "Sverige" => "sv_se",
-            "U.K." => "uk",
-            "Canada English" => "ca",
-            "Canada Français" => "fr_ca",
-            "Estados Unidos" => "es_us",
-            "México" => "es_mx",
-            "U.S." => "us",
-            "Argentina" => "es_ar",
-            "Brasil" => "pt:BR_br",
-            "Chile" => "es_cl",
-            "Colombia" => "es_co",
-            "Cuba" => "es_cu",
-            "Perú" => "es_pe",
-            "Venezuela" => "es_ve",
+        // So we don't have to query database on every replacement
+        var $settings;
+
+        var $regions = array(
+            'South Africa' => 'en_za',
+            '&#20013;&#22269;&#29256; (China)' => 'cn',
+            '&#39321;&#28207;&#29256; (Hong Kong)' => 'hk',
+            '&#2320;&#2337;&#2381;&#2344;&#2368; (Hindi)' => 'hi_in',
+            'India' => 'in',
+            '&#26085;&#26412; (Japan)' => 'jp',
+            '&#54620;&#44397; (Korea)' => 'kr',
+            '&#21488;&#28771;&#29256; (Taiwan)' => 'tw',
+            '&#1497;&#1513;&#1512;&#1488;&#1500; (Israel)' => 'iw_il',
+            '&#1575;&#1604;&#1593;&#1575;&#1604;&#1605; &#1575;&#1604;&#1593;&#1585;&#1576;&#1610; (Arabic)' => 'ar_me',
+            '&#1056;&#1086;&#1089;&#1089;&#1080;&#1103; (Russia)' => 'ru_ru',
+            'Australia' => 'au',
+            'New Zealand' => 'nz',
+            'België' => 'nl_be',
+            'Belgique' => 'fr_be',
+            'Česká republika' => 'cs_cz',
+            'Deutschland' => 'de',
+            'España' => 'es',
+            'France' => 'fr',
+            'Greece' => 'el_gr',
+            'Ireland' => 'en_ie',
+            'Italia' => 'it',
+            'Nederland' => 'nl_nl',
+            'Norge' => 'no_no',
+            'Österreich' => 'de_at',
+            'Portugal' => 'pt:PT_pt',
+            'Schweiz' => 'de_ch',
+            'Suisse' => 'fr_ch',
+            'Sverige' => 'sv_se',
+            'U.K.' => 'uk',
+            'Canada English' => 'ca',
+            'Canada Français' => 'fr_ca',
+            'Estados Unidos' => 'es_us',
+            'México' => 'es_mx',
+            'U.S.' => 'us',
+            'Argentina' => 'es_ar',
+            'Brasil' => 'pt:BR_br',
+            'Chile' => 'es_cl',
+            'Colombia' => 'es_co',
+            'Cuba' => 'es_cu',
+            'Perú' => 'es_pe',
+            'Venezuela' => 'es_ve',
         );
 
-        private $newstypes = array(
-            "All" => "",
-            "Top News" => "h",
-            "Foreign" => "w",
-            "Domestic" => "n",
-            "Business" => "b",
-            "Sci/Tech" => "t",
-            "Health" => "m",
-            "Sports" => "s",
-            "Entertainment" => "e",
+        var $newstypes = array(
+            'All' => '',
+            'Top News' => 'h',
+            'Foreign' => 'w',
+            'Domestic' => 'n',
+            'Business' => 'b',
+            'Sci/Tech' => 't',
+            'Health' => 'm',
+            'Sports' => 's',
+            'Entertainment' => 'e',
         );
 
-        private $outputtypes = array(
-            "Standard" => "",
-            "Text Only" => "t",
-            "With Images" => "&imv=1",
+        var $outputtypes = array(
+            'Standard' => '',
+            'Text Only' => 't',
+            'With Images' => '&imv=1',
         );
 
-        private $desctypes = array(
-            "Short" => "",
-            "Long" => "l",
+        var $desctypes = array(
+            'Short' => '',
+            'Long' => 'l',
         );
-
-        private $just_saved = 0;
 
         // Constructor
         function google_news_plugin() {
 
-            // Form POSTs
-            if ( $_POST && $_POST['google_news-submit'] ) {
-                $this->update_options($_POST);
-                $this->just_saved = 1;
+            // Form POSTs dealt with elsewhere
+            if ( is_array($_POST) ) {
+                if ( $_POST['google_news-widget-submit'] ) {
+                    $tmp = $_POST['google_news-widget-feed'];
+                    $alloptions = get_option('google_news');
+                    if ( $alloptions['widget-1'] != $tmp ) {
+                        if ( $tmp == '*DEFAULT*' ) {
+                            $alloptions['widget-1'] = '';
+                        } else {
+                            $alloptions['widget-1'] = $tmp;
+                        }
+                        update_option('google_news', $alloptions);
+                    }
+                } else if ( $_POST['google_news-options-submit'] ) {
+                    // noop
+                } else if ( $_POST['google_news-submit'] ) {
+                    // noop
+                }
             }
 
 	    add_filter('the_content', array(&$this, 'insert_news')); 
             add_action('admin_menu', array(&$this, 'admin_menu'));
             add_action('plugins_loaded', array(&$this, 'widget_init'));
+
+            // Makes it backwards compat pre-2.5 I hope
+            if ( function_exists('add_shortcode') ) {
+                add_shortcode('google-news', array(&$this, 'my_shortcode_handler'));
+             }
 
         }
 
@@ -123,169 +151,335 @@ if ( ! class_exists("google_news_plugin")) {
             add_options_page('Google News Options', 'Google News',
                              'administrator', __FILE__, 
                               array(&$this, 'plugin_options'));
+            add_management_page('Google News', 'Google News', 
+                                'administrator', __FILE__,
+                                array(&$this, 'admin_manage'));
+               
         }
 
-        // The actual admin page, content from another fn as we double as
-        // widget
+        // Settings -> Google News
         function plugin_options() {
-            $html = '';
-            $html .= '<div class="wrap">';
-            $html .= '<h2>Google News</h2>';
 
-            $html .= '<form method="post">';
-            $html .= $this->admin_form();
-            $html .= '<p><input type="submit" value="Save  &raquo;"></p>';
-            $html .= '</form>'; 
-            $html .= '</div>';
+            print <<<EOT
+            <div class="wrap">
+            <h2>Google News</h2>
+            <p>This plugin allows you to define a number of Google News 
+               feeds and have them displayed
+               anywhere in content or in a widget. Any number of inline 
+               replacements can be made, but only one widget instance is
+               permitted in this release. To use the feeds insert one or more
+               of the following special html comments or Shortcodes 
+               anywhere in user content. Note that Shortcodes, i.e. the
+               ones using square brackets, are only available in 
+               WordPress 2.5 and above.<p>
+               <ul><li><b>&lt;--google-news--&gt</b> (for default feed)</li>
+               <li><b>&lt;--google-news#feedname--&gt</b></li>
+               <li><b>[google-news]</b> (also for default feed)</li>
+               <li><b>[google-news name="feedname"]</b></li></ul><p>
+               To manage feeds, go to <a href="edit.php?page=google-news/google_news.php">Manage -> Google News</a>, where you will also find more information.<p>
+               <a href="http://www.kolbu.com/donations/">Donations Page</a>... ;-)<p>
+               <a href="http://www.kolbu.com/2008/04/07/google-news-plugin/">Widget Home Page</a>, leave a comment if you have questions etc.<p>
+               <a href="http://www.google.com/support/news/bin/answer.py?hl=en&answer=59255">Google Terms Of Use</a><p>
+    
 
-            print($html);     
+EOT;
         }
 
-        function admin_form() {
-            $html        = '';
-            $options     = get_option("google_news");
+        // Manage -> Google News
+        function admin_manage() {
+            // Edit/delete links
+            $mode = trim($_GET['mode']);
+            $id = trim($_GET['id']);
 
-            $flipregions     = array_flip($this->regions);
-            $flipnewstypes   = array_flip($this->newstypes);
-            $flipoutputtypes = array_flip($this->outputtypes);
-            $flipdesctypes   = array_flip($this->desctypes);
+            $this->upgrade_options();
 
-            // First time ever? Prep some values
-            if ( !is_array($options) ) {
-                // Clean up from earlier versions
-                $oldoptions = get_option('widget_google_news_widget');
-                if ( is_array($oldoptions) ) {
-                    $options = array();
-                    $options['title']      = $oldoptions['title'];
-                    $options['numnews']    = $oldoptions['numnews'];
-                    $options['region']     = $oldoptions['region'];
-                    $options['newstype']   = $oldoptions['newstype'];
-                    $options['outputtype'] = $oldoptions['outputtype'];
-                    $options['query']      = $oldoptions['query'];
-                    $options['feedtype']   = $flipregions[$options['newstype']].
-                                             ' : '.
-                                             $flipnewstypes[$options['outputtype']];
-                    
-                    delete_option('widget_google_news_widget');
-                    update_option('google_news', $options);
+            $alloptions = get_option('google_news');
+
+            if ( is_array($_POST) && $_POST['google_news-submit'] ) {
+
+                $newoptions = array();
+                $id                       = $_POST['google_news-id'];
+
+                $newoptions['name']       = $_POST['google_news-name'];
+                $newoptions['title']      = $_POST['google_news-title'];
+                $newoptions['region']     = $this->regions[$_POST['google_news-region']];
+                $newoptions['newstype']   = $this->newstypes[$_POST['google_news-newstype']];
+                $newoptions['outputtype'] = $this->outputtypes[$_POST['google_news-outputtype']];
+                $newoptions['desctype']   = $this->desctypes[$_POST['google_news-desctype']];
+                $newoptions['numnews']    = $_POST['google_news-numnews'];
+                $newoptions['query']      = $_POST['google_news-query'];
+                $newoptions['feedtype']   = $_POST['google_news-region'].' : '.$_POST['google_news-newstype'];
+
+                if ( $alloptions['feeds'][$id] == $newoptions ) {
+                    $text = 'No change...';
+                    $mode = 'main';
                 } else {
-                    $options = array( 'numnews' => 5,
-                                     'region' => 'us',
-				     'feedtype' => 'U.S. : All' );
-                    update_option('google_news', $options);
+                    $alloptions['feeds'][$id] = $newoptions;
+                    update_option('google_news', $alloptions);
+ 
+                    $mode = 'save';
                 }
+            } else if ( is_array($_POST) && $_POST['google_news-options-cachetime-submit'] ) {
+                if ( $_POST['google_news-options-cachetime'] != $alloptions['cachetime'] ) {
+                    $alloptions['cachetime'] = $_POST['google_news-options-cachetime'];
+                    update_option('google_news', $alloptions);
+                    $text = "Cache time changed to {$alloptions[cachetime]} seconds.";
+                } else {
+                    $text = "No change in cache time...";
+                }
+                $mode = 'main';
             }
 
-            if ( $this->just_saved ) {
-                $html .= '<div class="updated"><p><strong>' . __('Options saved.', 'google-news') . '</strong></p></div>';
-                $this->just_saved = 0;
+            if ( $mode == 'newfeed' ) {
+                $newfeed = 0;
+                foreach ($alloptions['feeds'] as $k => $v) {
+                    if ( $k > $newfeed ) {
+                        $newfeed = $k;
+                    }
+                }
+                $newfeed += 1;
+
+                $text = "Please configure new feed and press Save.";
+                $mode = 'main';
             }
 
-            $title       = $options['title'];
-            $numnews     = $options['numnews'];
-            $region      = $flipregions[$options['region']];
-            $newstype    = $flipnewstypes[$options['newstype']];
-            $outputtype  = $flipoutputtypes[$options['outputtype']];
-            $desctype    = $flipdesctypes[$options['desctype']];
-            $query       = $options['query'];
-
-            $html .= '<table class="form-table" style="width: 100%;">';
-            $html .= ' <tr>';
-            $html .= '  <th scrope="row">';
-            $html .= '   <label for="google_news-title">Admin-defined title:</label>';
-            $html .= '  </th>';
-            $html .= '  <td>';
-            $html .= '   <input style="width: 20em;" id="google_news-title" name="google_news-title" type="text" value="'.$title.'" />';
-            $html .= '   (Optional, if empty then feed name is used)';
-            $html .= '  </td>';
-            $html .= ' </tr>';
-            $html .= ' <tr>';
-            $html .= '  <th scrope="row">';
-            $html .= '   <label for="google_news-region">News region:</label>';
-            $html .= '  </th>';
-            $html .= '  <td>';
-            $html .= '<select name="google_news-region">';
-            foreach ($this->regions as $k => $v) {
-                $html .= '<option '.(strcmp($k,$region)?'':'selected').' value="'.$k.'" >'.$k.'</option>
-';
+            if ( $mode == 'save' ) {
+                $text = "Saved feed {$alloptions[feeds][$id][name]} [$id].";
+                $mode = 'main';
             }
-            $html .= '</select>';
-            $html .= '  </td>';
-            $html .= ' </tr>';
-            $html .= ' <tr>';
-            $html .= '  <th scrope="row">';
-            $html .= '   <label for="google_news-newstype">News type:</label>';
-            $html .= '  </th>';
-            $html .= '  <td>';
-            $html .= '<select name="google_news-newstype">';
-            foreach ($this->newstypes as $k => $v) {
-                $html .= '<option '.(strcmp($k,$newstype)?'':'selected').' value="'.$k.'" >'.$k.'</option>';
+
+            if ( $mode == 'edit' ) {
+                if ( ! empty($text) ) {
+                     echo '<!-- Last Action --><div id="message" class="updated fade"><p>'.$text.'</p></div>';
+                }
+                $text = "Editing feed {$alloptions[feeds][$id][name]} [$id].";
+
+                $edit_id = $id;
+                $mode = 'main';
             }
-            $html .= '</select>';
-            $html .= '  </td>';
-            $html .= ' </tr>';
-            $html .= ' <tr>';
-            $html .= '  <th scrope="row">';
-            $html .= '   <label for="google_news-outputtype">Output type:</label>';
-            $html .= '  </th>';
-            $html .= '  <td>';
-            $html .= '<select name="google_news-outputtype">';
-            foreach ($this->outputtypes as $k => $v) {
-                $html .= '<option '.(strcmp($k,$outputtype)?'':'selected').' value="'.$k.'" >'.$k.'</option>';
+
+            if ( $mode == 'delete' ) {
+
+                $text = "Deleted feed {$alloptions[feeds][$id][name]} [$id].";
+                
+                unset($alloptions['feeds'][$id]);
+
+                update_option('google_news', $alloptions);
+ 
+                $mode = 'main';
             }
-            $html .= '</select>';
-            $html .= '  </td>';
-            $html .= ' </tr>';
-            $html .= ' <tr>';
-            $html .= '  <th scrope="row">';
-            $html .= '   <label for="google_news-desctype">News item length:</label>';
-            $html .= '  </th>';
-            $html .= '  <td>';
-            $html .= '<select name="google_news-desctype">';
-            foreach ($this->desctypes as $k => $v) {
-                $html .= '<option '.(strcmp($k,$desctype)?'':'selected').' value="'.$k.'" >'.$k.'</option>';
-            }
-            $html .= '</select>';
-            $html .= '  </td>';
-            $html .= ' </tr>';
-            $html .= ' <tr>';
-            $html .= '  <th scrope="row">';
-            $html .= '   <label for="google_news-numnews">Max items to show:</label>';
-            $html .= '  </th>';
-            $html .= '  <td>';
-            $html .= '   <input style="width: 2em;" id="google_news-numnews" name="google_news-numnews" type="text" value="'.$numnews.'" />';
-            $html .= '  </td>';
-            $html .= ' </tr>';
-            $html .= ' <tr>';
-            $html .= '  <th scrope="row">';
-            $html .= '   <label for="google_news-query">Optional query filter:</label>';
-            $html .= '  </th>';
-            $html .= '  <td>';
-            $html .= '   <input style="width: 20em;" id="google_news-query" name="google_news-query" type="text" value="'.$query.'" />';
-            $html .= '  </td>';
-            $html .= ' </tr>';
-            $html .= '</table>';
-            $html .= '<input type="hidden" id="google_news-submit" name="google_news-submit" value="1" />';
 
-            return $html;
-        }
+            // main
+            if ( empty($mode) or ($mode == 'main') ) {
 
-        function update_options($data) {
-            $newoptions = array();
-            $options = get_option("google_news");
+                if ( ! empty($text) ) {
+                     echo '<!-- Last Action --><div id="message" class="updated fade"><p>'.$text.'</p></div>';
+                }
+                print '<div class="wrap">';
+                print ' <h2>';
+                print _e('Manage Google News Feeds','google_news');
+                print '</h2>';
+                print ' <table id="the-list-x" width="100%" cellspacing="3" cellpadding="3">';
+                print '  <thead>';
+                print '   <tr>';
+                print '    <th scope="col">';
+                print _e('Key','google_news');
+                print '</th>';
+                print '    <th scope="col">';
+                print _e('Name','google_news');
+                print '</th>';
+                print '    <th scope="col">';
+                print _e('Admin-defined title','google_news');
+                print '</th>';
+                print '    <th scope="col">';
+                print _e('Region','google_news');
+                print '</th>';
+                print '    <th scope="col">';
+                print _e('Type','google_news');
+                print '</th>';
+                print '    <th scope="col">';
+                print _e('Output','google_news');
+                print '</th>';
+                print '    <th scope="col">';
+                print _e('Item length','google_news');
+                print '</th>';
+                print '    <th scope="col">';
+                print _e('Max items','google_news');
+                print '</th>';
+                print '    <th scope="col">';
+                print _e('Optional query filter','google_news');
+                print '</th>';
+                print '    <th scope="col" colspan="3">';
+                print _e('Action','google_news');
+                print '</th>';
+                print '   </tr>';
+                print '  </thead>';
+                if ( $alloptions['feeds'] ) {
+                    $i = 0;
 
-            $newoptions['title']       = $data['google_news-title'];
-            $newoptions['numnews']     = $data['google_news-numnews'];
-            $newoptions['region']      = $this->regions[$data['google_news-region']];
-            $newoptions['newstype']    = $this->newstypes[$data['google_news-newstype']];
-            $newoptions['outputtype']  = $this->outputtypes[$data['google_news-outputtype']];
-            $newoptions['query']       = $data['google_news-query'];
-            $newoptions['desctype']    = $this->desctypes[$data['google_news-desctype']];
-            $newoptions['feedtype']    = $data['google_news-region']." : ".$data['google_news-newstype'];
+                    $flipregions     = array_flip($this->regions);
+                    $flipnewstypes   = array_flip($this->newstypes);
+                    $flipoutputtypes = array_flip($this->outputtypes);
+                    $flipdesctypes   = array_flip($this->desctypes);
 
-            if ( $options != $newoptions ) {
-                $options = $newoptions;
-                update_option('google_news', $options);
+                    foreach ($alloptions['feeds'] as $key => $val) {
+                        if ( $i % 2 == 0 ) {
+                            print '<tr class="alternate">';
+                        } else {
+                            print '<tr>';
+                        }
+                        if ( isset($edit_id) && $edit_id == $key ) {
+                            print "<form name=\"google_news_options\" action=\"".
+                                  htmlspecialchars($_SERVER['REQUEST_URI']).
+                                  "\" method=\"post\" id=\"google_news_options\">";
+                                    
+                            print "<th scope=\"row\">".$key."</th>";
+                            print '<td><input size="10" maxlength="20" id="google_news-name" name="google_news-name" type="text" value="'.$val['name'].'" /></td>';
+                            print '<td><input size="20" maxlength="20" id="google_news-title" name="google_news-title" type="text" value="'.$val['title'].'" /></td>';
+                            print '<td><select name="google_news-region">';
+                            $region = $flipregions[$val['region']];
+                            foreach ($this->regions as $k => $v) {
+                                print '<option '.(strcmp($k,$region)?'':'selected').' value="'.$k.'" >'.$k.'</option>';
+                            }
+                            print '</select></td>';
+                            print '<td><select name="google_news-newstype">';
+                            $newstype = $flipnewstype[$val['newstype']];
+                            foreach ($this->newstypes as $k => $v) {
+                                print '<option '.(strcmp($k,$newstype)?'':'selected').' value="'.$k.'" >'.$k.'</option>';
+                            }
+                            print '</select></td>';
+                            print '<td><select name="google_news-outputtype">';
+                            $outputtype = $flipnewstype[$val['outputtype']];
+                            foreach ($this->outputtypes as $k => $v) {
+                                print '<option '.(strcmp($k,$outputtype)?'':'selected').' value="'.$k.'" >'.$k.'</option>';
+                            }
+                            print '</select></td>';
+                            print '<td><select name="google_news-desctype">';
+                            $desctype = $flipdesctype[$val['desctype']];
+                            foreach ($this->desctypes as $k => $v) {
+                                print '<option '.(strcmp($k,$desctype)?'':'selected').' value="'.$k.'" >'.$k.'</option>';
+                            }
+                            print '</select></td>';
+                            print '<td><input size="3" maxlength="3" id="google_news-numnews" name="google_news-numnews" type="text" value="'.$val['numnews'].'" /></td>';
+                            print '<td><input size="10" maxlength="50" id="google_news-query" name="google_news-query" type="text" value="'.$val['query'].'" /></td>';
+                            print '<td><input type="submit" value="Save  &raquo;">';
+                            print "</td>";
+                            print "<input type=\"hidden\" id=\"google_news-id\" name=\"google_news-id\" value=\"$edit_id\" />";
+                            print "<input type=\"hidden\" id=\"google_news-submit\" name=\"google_news-submit\" value=\"1\" />";
+                            print "</form>";
+                        } else {
+                            print "<th scope=\"row\">".$key."</th>";
+                            print "<td>".$val['name']."</td>";
+                            print "<td>".$val['title']."</td>";
+                            print "<td>".$flipregions[$val['region']]."</td>";
+                            print "<td>".$flipnewstypes[$val['newstype']]."</td>";
+                            print "<td>".$flipoutputtypes[$val['outputtype']]."</td>";
+                            print "<td>".$flipdesctypes[$val['desctype']]."</td>";
+                            print "<td>".$val['numnews']."</td>";
+                            print "<td>".$val['query']."</td>";
+                            print "<td><a href=\"edit.php?page=google-news/google_news.php&amp;mode=edit&amp;id=$key\" class=\"edit\">";
+                            print __('Edit','google_news');
+                            print "</a></td>\n";
+                            print "<td><a href=\"edit.php?page=google-news/google_news.php&amp;mode=delete&amp;id=$key\" class=\"delete\" onclick=\"javascript:check=confirm( '".__("This feed entry will be erased. Delete?",'google_news')."');if(check==false) return false;\">";
+                            print __('Delete', 'google_news');
+                            print "</a></td>\n";
+                        }
+                        print '</tr>';
+
+                        $i++;
+                    }
+                    if ( $newfeed ) {
+
+                        print "<form name=\"google_news_options\" action=\"".
+                              htmlspecialchars($_SERVER['REQUEST_URI']).
+                              "\" method=\"post\" id=\"google_news_options\">";
+                                
+                        print "<th scope=\"row\">".$newfeed."</th>";
+                        print '<td><input size="10" maxlength="20" id="google_news-name" name="google_news-name" type="text" value="NEW" /></td>';
+                        print '<td><input size="20" maxlength="20" id="google_news-title" name="google_news-title" type="text" value="" /></td>';
+                        print '<td><select name="google_news-region">';
+                        $region = 'U.S.';
+                        foreach ($this->regions as $k => $v) {
+                            print '<option '.(strcmp($k,$region)?'':'selected').' value="'.$k.'" >'.$k.'</option>';
+                        }
+                        print '</select></td>';
+                        print '<td><select name="google_news-newstype">';
+                        foreach ($this->newstypes as $k => $v) {
+                            print '<option value="'.$k.'" >'.$k.'</option>';
+                        }
+                        print '</select></td>';
+                        print '<td><select name="google_news-outputtype">';
+                        foreach ($this->outputtypes as $k => $v) {
+                            print '<option value="'.$k.'" >'.$k.'</option>';
+                        }
+                        print '</select></td>';
+                        print '<td><select name="google_news-desctype">';
+                        foreach ($this->desctypes as $k => $v) {
+                            print '<option value="'.$k.'" >'.$k.'</option>';
+                        }
+                        print '</select></td>';
+                        print '<td><input size="3" maxlength="3" id="google_news-numnews" name="google_news-numnews" type="text" value="5" /></td>';
+                        print '<td><input size="10" maxlength="50" id="google_news-query" name="google_news-query" type="text" value="" /></td>';
+                        print '<td><input type="submit" value="Save  &raquo;">';
+                        print "</td>";
+                        print "<input type=\"hidden\" id=\"google_news-id\" name=\"google_news-id\" value=\"$newfeed\" />";
+                        print "<input type=\"hidden\" id=\"google_news-newfeed\" name=\"google_news-newfeed\" value=\"1\" />";
+                        print "<input type=\"hidden\" id=\"google_news-submit\" name=\"google_news-submit\" value=\"1\" />";
+                        print "</form>";
+                    } else {
+                        print "</tr><tr><td colspan=\"12\"><a href=\"edit.php?page=google-news/google_news.php&amp;mode=newfeed\" class=\"newfeed\">";
+                        print __('Add extra feed','google_news');
+                        print "</a></td></tr>";
+
+                    }
+                } else {
+                    print '<tr><td colspan="12" align="center"><b>';
+                    print __('No feeds found(!)','google_news');
+                    print '</b></td></tr>';
+                }
+                print ' </table>';
+                print '<h2>';
+                print _e('Global configuration parameters','google_news');
+                print '</h2>';
+                print ' <form method="post">';
+                print ' <table id="the-cachetime" cellspacing="3" cellpadding="3">';
+                print '<tr><td><b>Cache time:</b></td>';
+                print '<td><input size="6" maxlength="6" id="google_news-options-cachetime" name="google_news-options-cachetime" type="text" value="'.$alloptions['cachetime'].'" /> seconds</td>';
+                print '<input type="hidden" id="google_news-options-cachetime-submit" name="google_news-options-cachetime-submit" value="1" />';
+                print '<td><input type="submit" value="Save  &raquo;"></td></tr>';
+                print ' </table>';
+                print '</form>'; 
+
+                print '<h2>';
+                print _e('Information','google_news');
+                print '</h2>';
+                print ' <table id="the-list-x" width="100%" cellspacing="3" cellpadding="3">';
+                print '<tr><td><b>Key</b></td><td>Unique identifier used internally.</td></tr>';
+                print '<tr><td><b>Name</b></td><td>Optional name to be able to reference a specific feed as e.g. ';
+                print ' <b>&lt;!--google_news#myname--&gt;</b>. ';
+                print ' If more than one feed shares the same name, a random among these will be picked each time. ';
+                print ' The one(s) without a name will be treated as the default feed(s), i.e. used for <b>&lt;!--google_news--&gt;</b> ';
+                print ' or widget feed type <b>*DEFAULT*</b>. If you have Wordpress 2.5 ';
+                print ' or above, you can also use Shortcodes on the form <b>[google-news]</b> ';
+                print ' (for default feed) or <b>[google-news name="feedname"]</b></td></tr>';
+                print '<tr><td><b>Admin-defined title</b></td><td>Optional feed title. If not set, a reasonable title based on ';
+                print 'Region and Type will be used. Note Google Terms of Service require you to show that the feeds come from ';
+                print 'Google News.</td></tr>';
+                print '<tr><td><b>Region</b></td><td>The region/language of the feed.</td></tr>';
+                print '<tr><td><b>Type</b></td><td>The type of news to present.</td></tr>';
+                print '<tr><td><b>Output</b></td><td>Text only, allow for images or images with most news items. Note that ';
+                print 'there will be text in all three cases.</td></tr>';
+                print '<tr><td><b>Item length</b></td><td>Single sentence news items or 2-3 lines of text.</td></tr>';
+                print '<tr><td><b>Max items</b></td><td>Maximum number of news items to show for this feed. If the feed contains ';
+                print 'less than the requested items, only the number of items in the feed will obviously be displayed.</td></tr>';
+                print '<tr><td><b>Optional query filter</b></td><td>Pass the requested news through a query filter for very ';
+                print 'detailed control over the type of news to show. E.g. only sports news about the Yankees.</td></tr>';
+                print '<tr><td colspan="12">In all cases, output will depend on original news source and can and will ';
+                print 'differ from source to source. Google hasn\'t really done a great job with respect to formatting. ';
+                print 'Note specifically that a query filter will change the output slightly, as this is how Google wants it.</td></tr>';
+                print '<tr><td><b>Cache time</b></td><td>Minimum number of seconds that WordPress should cache a Google News feed before fetching it again.</td></tr>';
+                print ' </table>';
+                print '</div>';
             }
         }
 
@@ -293,30 +487,25 @@ if ( ! class_exists("google_news_plugin")) {
 
         // Callback for inline replacement
         function insert_news($data) {
-            $tag = "<!--google-news-->";
+            global $settings;
 
-            $options = get_option('google_news');
+            // Allow for multi-feed sites
+            $tag = '/<!--google-news(|#.*?)-->/';
 
-            $region     = $options['region'] ? $options['region'] : 'us';
-            $newstype   = $options['newstype'];
-            $outputtype = $options['outputtype'];
-            $query      = $options['query'];
-            $numnews    = $options['numnews'] ? $options['numnews'] : 5;
-            $desctype   = $options['desctype'];
-            $feedtype   = $options['feedtype'] ? $options['feedtype'] : 'U.S. : All';
+            // We may have old style options
+            $this->upgrade_options();
 
-            if ( strlen($options['title']) ) {
-                $title = $options['title'];
-            } else {
-                $title = "Google News : ".$feedtype;
-            }
-            $feed = "<!-- Start Google News code -->\n<div id=\"google-news-inline\"><h3>$title</h4>\n";
-            $feed .= $this->get_feed($region, $newstype, $outputtype, 
-                                     $query, $numnews, $desctype);
-            $feed .= "</div><!-- End Google News code -->\n";
+            // Avoid getting this for each callback
+            $settings   = get_option('google_news');
 
-            return str_replace($tag, $feed, $data);
+            $result = preg_replace_callback($tag, 
+                              array(&$this, 'inline_replace_callback'), $data);
+
+            unset($settings);
+
+            return $result;
         }
+
 
         // *********** Widget support **************
         function widget_init() {
@@ -327,7 +516,7 @@ if ( ! class_exists("google_news_plugin")) {
                 return;
 
             register_widget_control('Google News', 
-                                   array(&$this, 'widget_control'), 400, 400);
+                                   array(&$this, 'widget_control'), 200, 100);
 
             // wp_* has more features, presumably fixed at a later date
             register_sidebar_widget('Google News',
@@ -337,46 +526,86 @@ if ( ! class_exists("google_news_plugin")) {
 
         function widget_control() {
 
-            if ( $_POST['google_news-submit'] ) {
-                $this->update_options($_POST);
+            // We may have old style options
+            $this->upgrade_options();
+
+            $alloptions = get_option('google_news');
+            $thisfeed = $alloptions['widget-1'];
+
+            print '<p><label for="google_news-feed">Select feed:</label>';
+            print '<select style="vertical-align:middle;" name="google_news-widget-feed">';
+
+            $allfeeds = array();
+            foreach ($alloptions['feeds'] as $k => $v) {
+                $allfeeds[strlen($v['name'])?$v['name']:'*DEFAULT*'] = 1;
+            } 
+            foreach ($allfeeds as $k => $v) {
+                print '<option '.($k==$thisfeed?'':'selected').' value="'.$k.'" >'.$k.'</option>';
             }
+            print '</select><p>';
+            print '<input type="hidden" id="google_news-widget-submit" name="google_news-widget-submit" value="1" />';
 
-            $options = get_option("google_news");
 
-            $html = $this->admin_form();
-            print($html);
         }
 
         // Called every time we want to display ourselves as a sidebar widget
         function widget_output($args) {
             extract($args); // Gives us $before_ and $after_ I presume
                         
-            $options = get_option('google_news');
+            // We may have old style options
+            $this->upgrade_options();
+
+            $alloptions = get_option('google_news');
+            $matching_feeds = array();
+            foreach ($alloptions['feeds'] as $k => $v) {
+                if ( (string)$v['name'] == $alloptions['widget-1'] ) { 
+                    $matching_feeds[] = $k;
+                } 
+            }
+            if ( ! count($matching_feeds) ) {
+                if ( ! strlen($alloptions['widget-1']) ) {
+                    $content = '<ul><b>No default feed available</b></ul>';
+                } else {
+                    $content = "<ul>Unknown feed name <b>{$alloptions[widget-1]}</b> used</ul>";
+                }
+                echo $before_widget;
+                echo $before_title . __('Google News<br>Error','google_news') . $after_title . '<div>';
+                echo $content;
+                echo '</div>' . $after_widget;
+                return;
+            }
+            $feed_id = $matching_feeds[rand(0, count($matching_feeds)-1)];
+            $options = $alloptions['feeds'][$feed_id];
+
+            $feedtype   = $options['feedtype'];
+            $cachetime  = $alloptions['cachetime'];
+
+            if ( strlen($options['title']) ) {
+                $title = $options['title'];
+            } else {
+                $title = 'Google News<br>'.$feedtype;
+            }
+
+            echo $before_widget;
+            echo $before_title . $title . $after_title . '<div>';
+            echo $this->get_feed($options, $cachetime);
+            echo '</div>' . $after_widget;
+        }
+
+        // ************** The actual work ****************
+        function get_feed(&$options, $cachetime) {
+
+            if ( ! isset($options['region']) ) {
+                return 'Options not set, visit plugin configuation screen.'; 
+            }
+
             $region     = $options['region'] ? $options['region'] : 'us';
             $newstype   = $options['newstype'];
             $outputtype = $options['outputtype'];
             $query      = $options['query'];
             $numnews    = $options['numnews'] ? $options['numnews'] : 5;
             $desctype   = $options['desctype'];
-            $feedtype   = $options['feedtype'] ? $options['feedtype'] : 'U.S. : All';
-            if ( strlen($options['title']) ) {
-                $title = $options['title'];
-            } else {
-                $title = "Google News<br>".$feedtype;
-            }
 
-            echo $before_widget;
-            echo $before_title . $title . $after_title;
-            $GoogleFeed = $this->get_feed($region, $newstype, $outputtype, 
-                                          $query, $numnews, $desctype);
-            echo '<div style="margin-top:5px;text-align:left;">'.$GoogleFeed.'</
-div>';
-            echo $after_widget;
-
-        }
-
-        // ************** The actual work ****************
-        function get_feed($region, $newstype, $outputtype, $query, $numnews, $desctype) {
             $result = '<ul>';
             $feedurl = 'http://news.google.com/news?output=rss';
 
@@ -395,106 +624,210 @@ div>';
                 $squery = urlencode(strtolower($query));
                 $feedurl .= "&q=$squery";
             }
-            ini_set('user_agent','Mozilla;');
-            if ($RemoteFile = fopen($feedurl, "r")) {
-                $buffer = "";
-                if ($RemoteFile) {
-                        while (!feof($RemoteFile)) {
-                            $buffer .= fgets($RemoteFile, 1024);
-                        }
-                }
-                fclose($RemoteFile);
-            } else {
-                return "Google News unavailable<br>$errorstr ($errno)</ul>";
+
+            // Using the WP RSS fetcher (MagpieRSS). It has serious
+            // GC problems though.
+            define('MAGPIE_CACHE_AGE', $cachetime);
+            define('MAGPIE_CACHE_ON', 1);
+            define('MAGPIE_DEBUG', 1);
+
+            $rss = fetch_rss($feedurl);
+
+            if ( ! is_object($rss) ) {
+            // if ( 1 ) {
+                return 'Google News unavailable</ul>';
             }
+            $rss->items = array_slice($rss->items, 0, $numnews);
+            foreach ( $rss->items as $item ) {
+                $description = $this->html_decode($item['description']);
+
+                // All this is bound to break, but Google 
+                // doesn't know usable markup from squat
+    
+                // As per Google TOC, we need to retain related link
+                preg_match('|(<a class=p [^>]+><nobr>[^<]+</nobr></a>)|', 
+                           $description, $related);
         
-            preg_match_all('/([^<]*)/', $buffer, $matches);
-            $itemCount = 0;
-            foreach ($matches[0] as $line) {
-                if ( !strlen($line) ) {
-                    continue;
+                // Try some tricks to lose useless markup
+                $bloc = strpos($description, '<font');
+                if ( $bloc ) {
+                    $description = substr($description, $bloc);
                 }
-                if (eregi ('^description>(.*)', $line, $out)) {
-                    $description = $this->html_decode($out[1]);
+                $eloc = strpos($description, '<a href=',
+                                        strpos($description, '<a href=')+1);
+                if ( $eloc ) {
+                    $description = substr($description,0,$eloc);
+                }
         
-        
-                    // All this is bound to break, but Google 
-                    // doesn't know usable markup from squat
-        
-                    // As per Google TOC, we need to retain related link
-                    preg_match("|(<a class=p [^>]+><nobr>[^<]+</nobr></a>)|", $description, $related);
-        
-                    // Try some tricks to lose useless markup
-                    $bloc = strpos($description, "<font");
-                    if ( $bloc ) {
-                        $description = substr($description, $bloc);
-                    }
-                    $eloc = strpos($description, "<a href=",strpos($description, "<a href=")+1);
-                    if ( $eloc ) {
-                        $description = substr($description,0,$eloc);
-                    }
-        
-                    // No markup in tooltips
-                    $tooltip = preg_replace("/<[^>]+>/","",$description);
-                    $patterns = array(
-                                "/<(td|tr|table|div|font|ul|li)[^>]*>/",
-                                "/<.(td|tr|table|div|font|ul|li)[^>]*>/",
-                                );
-                    $replacements = array(
-                                "",
-                                );
-                    $description = preg_replace($patterns, $replacements, $description);
-                    $description = preg_replace("|<br>|", "", $description, 1);
-                    $description = preg_replace("|(<img src[^>]+>)<br>([^<]+</a>)|", "\\1\\2<br>", $description, 1);
-                    $description = preg_replace("|</div><br><div|", "</div><div", $description);
-                    $description .= $related[1];
+                // No markup in tooltips
+                $tooltip = preg_replace('/<[^>]+>/','',$description);
+                $patterns = array(
+                            '/<(td|tr|table|div|font|ul|li)[^>]*>/',
+                            '/<.(td|tr|table|div|font|ul|li)[^>]*>/',
+                            );
+                $replacements = array(
+                            '',
+                            '',
+                            );
+                $description = preg_replace($patterns, $replacements, 
+                                            $description);
+                $description = preg_replace('|<br>|', '', $description, 1);
+                $description = preg_replace('|(<img src[^>]+>)<br>([^<]+</a>)|',
+                                            '\\1\\2<br>', $description, 1);
+                $description = preg_replace('|</div><br><div|', '</div><div', 
+                                            $description);
+                $description .= $related[1];
+
+                $title = $this->html_decode($item['title']);
+                $date = $item['pubdate'];
+                $link = $item['link'];
+                if ( strlen($desctype) ) {
+                    $result .= "<li>$description</li>";
+                } else {
+                        $result .= "<li><a href=\"$link\" target=\"_blank\" ".
+                                   "title=\"$tooltip\">$title<br>$related[1]</a></li>";
                 }
-                if (eregi ('^title>(.*)', $line, $out)) {
-                    $title = $this->html_decode($out[1]);
-                }
-                if (eregi ('^pubDate>(.*)', $line, $out)) {
-                    $date = $out[1];
-                }
-                if (eregi ('^link>(.*)', $line, $out)) {
-                    $link = $out[1];
-                }
-                if (eregi ('^/item>', $line, $out)) {
-                    if ( strlen($desctype) ) {
-                        $result .= "<li>$description</li>";
-                    } else {
-                        $result .= "<li><a href=\"$link\" target=\"_blank\" title=\"$tooltip\">$title<br>$related[1]</a></li>";
-                    }
-                    $title = 0;
-                    $description = 0;
-                    $date = 0;
-                    $link = 0;
-                    $itemCount += 1;
-                    if ( $itemCount >= $numnews ) {
-                        return $result.'</ul>';
-                    }
-                }
-            }
+            } 
             return $result.'</ul>';
+        }
+
+        // *********** Shortcode support **************
+        function my_shortcode_handler($atts, $content=null) {
+            global $settings;
+            $settings = get_option('google_news');
+            return $this->random_feed($atts['name']);
+            unset($settings);
+        }
+
+        
+        // *********** inline replacement callback support **************
+        function inline_replace_callback($matches) {
+
+            if ( ! strlen($matches[1]) ) { // Default
+                $feedname = '';
+            } else {
+                $feedname = substr($matches[1], 1); // Skip #
+            }
+            return $this->random_feed($feedname);
         }
 
         // ************** Support functions ****************
 
+        function random_feed($name) {
+            global $settings;
+
+            $matching_feeds = array();
+            foreach ($settings['feeds'] as $k => $v) {
+                if ( (string)$v['name'] == $name ) { 
+                    $matching_feeds[] = $k;
+                } 
+            }
+            if ( ! count($matching_feeds) ) {
+                if ( ! strlen($name) ) {
+                    return '<ul><b>No default feed available</b></ul>';
+                } else {
+                    return "<ul>Unknown feed name <b>$name</b> used</ul>";
+                }
+            }
+            $feed_id = $matching_feeds[rand(0, count($matching_feeds)-1)];
+            $feed = $settings['feeds'][$feed_id];
+
+            if ( strlen($feed['title']) ) {
+                $title = $feed['title'];
+            } else {
+                $title = 'Google News : '.$feed['feedtype'];
+            }
+
+            $result = '<!-- Start Google News code -->';
+            $result .= "<div id=\"google-news-inline\"><h3>$title</h4>";
+            $result .= $this->get_feed($feed, $settings['cachetime']);
+            $result .= '</div><!-- End Google News code -->';
+            return $result;
+        }
+
         function html_decode($in) {
             $patterns = array(
-                "/&amp;/",
-                "/&quot;/",
-                "/&lt;/",
-                "/&gt;/",
+                '/&amp;/',
+                '/&quot;/',
+                '/&lt;/',
+                '/&gt;/',
             );
             $replacements = array(
-                "&",
-                "\"",
-                "<",
-                ">",
+                '&',
+                '"',
+                '<',
+                '>',
             );
             $tmp = preg_replace($patterns, $replacements, $in);
             return preg_replace('/&#39;/','\'',$tmp);
 
+        }
+
+        // Unfortunately, we didn't finalize on a data structure
+        // until version 2.1ish of the plugin so we need to upgrade
+        // if needed
+        function upgrade_options() {
+            $options = get_option('google_news');
+
+            if ( !is_array($options) ) {
+                // From 1.0
+                $oldoptions = get_option('widget_google_news_widget');
+                if ( is_array($oldoptions) ) {
+                    $flipregions     = array_flip($this->regions);
+                    $flipnewstypes   = array_flip($this->newstypes);
+
+                    $tmpfeed = array();
+                    $tmpfeed['title']      = $oldoptions['title'];
+                    $tmpfeed['name']       = '';
+                    $tmpfeed['numnews']    = $oldoptions['numnews'];
+                    $tmpfeed['region']     = $oldoptions['region'];
+                    $tmpfeed['newstype']   = $oldoptions['newstype'];
+                    $tmpfeed['outputtype'] = $oldoptions['outputtype'];
+                    $tmpfeed['query']      = $oldoptions['query'];
+                    $tmpfeed['feedtype']   = $flipregions[$tmpfeed['newstype']].
+                                             ' : '.
+                                             $flipnewstypes[$tmpfeed['outputtype']];
+
+                    $options = array();
+                    $options['feeds']     = array( $tmpfeed );
+                    $options['widget-1']  = 0;
+                    $options['cachetime'] = 300;
+                    
+                    delete_option('widget_google_news_widget');
+                    update_option('google_news', $options);
+                } else {
+                    // First time ever
+                    $options = array();
+                    $options['feeds']     = array( $this->default_feed() );
+                    $options['widget-1']  = 0;
+                    $options['cachetime'] = 300;
+                    update_option('google_news', $options);
+                }
+            } else {
+                // From 2.0/2.0.1 to 2.1
+                if ( array_key_exists('region', $options) ) {
+                    $newoptions = array('feeds' => array( $options));
+                    $newoptions['feeds'][0]['name'] = '';
+                    $newoptions['widget-1']         = 0;
+                    $newoptions['cachetime']        = 300;
+                    update_option('google_news', $newoptions);
+
+                } else if ( 0 ) {
+                    // Messed up options, start from scratch
+                    $options = array();
+                    $options['feeds']     = array( $this->default_feed() );
+                    $options['widget-1']  = 0;
+                    $options['cachetime'] = 300;
+                    update_option('google_news', $options);
+                }
+            }
+        }
+
+        function default_feed() {
+            return array( 'numnews' => 5,
+                          'region' => 'us',
+                          'name' => '',
+                          'feedtype' => 'U.S. : All');
         }
     }
 

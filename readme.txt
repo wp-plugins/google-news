@@ -7,7 +7,7 @@ Tested up to: 2.5
 Stable tag: trunk
 
 Displays N first news items from a selectable Google News 
-RSS feed, inline or as a widget.
+RSS feed, inline or as a widget. Now with multiple feeds.
 
 == Description ==
 
@@ -24,32 +24,42 @@ region/language and topic has been enabled by Google but
 it should degrade gracefully.
 
 This plugin works both as a widget and as inline content
-replacement. It can be used as both simultaneously, but
-all instances will show the same content.
+replacement. Any number of different feeds can be used
+as inline replacements at the same time, but only one widget 
+instance is supported in this release.
 
-For widget use, simply use the widget as any other. For inline
-use, insert the string **&lt;!--google-news--&gt;** (i.e.
-<!--google-news-->) in your content and it will be replaced
-with the news.
+For widget use, simply use the widget as any other after
+selecting which feed it should display. For inline content
+replacement, insert the one or more of the following strings in 
+your content and they will be replaced by the relevant news feed.
 
-Short version: 
+1. **&lt;!--google-news--&gt;** (i.e. <!--google-news-->) for the default feed
+1. **&lt;!--google-news#feedname--&gt;** (i.e. <!--google-news#feedname-->)
 
-Enable plugin, configure using either the Google News option
-on the Dashboard Settings page or the configuration box on
-the widget page. Both access and update the same settings, 
-you do not need to use one or the other. 
+Shortcodes can be used if you have WordPress 2.5 or above,
+in which case these replacement methods are also available.
 
-Long version:
+1. **[google-news]** for the default feed
+1. **[google-news name="feedname"]**
 
-This WordPress plugin can be used as both a widget and 
-inside normal blog content. Due to this dual personality,
-there are two ways of updating the plugin configuration. 
-Note that these ways are identical and you do not specifically
-have to use the confiuration box on the widgets page for
-the widget or vice versa.
+Enable plugin, go to the Google News page under 
+Dashboard->Settings and read the initial information. Then 
+go to the Google News page under Dashboard->Manage and 
+configure one or more feeds. Then use a widget or insert
+relevant strings in your content. 
 
+Additional information:
 
 The available options are as follows. 
+
+**Name:** Optional feed name, that can be used in the 
+widget or the inline replacement string to reference
+a specific feed. Any feed without a name is considered
+"default" and will be used if the replacement strings do
+not reference a specific feed. If there are more than
+one feed with the same name, a random of these is picked
+every time it is used. This also applies to the default
+feed(s). 
 
 **Title:** Optional, which when set will be used in the
 widget title or as a header above the news items when 
@@ -90,8 +100,11 @@ to add a query, then you most likely want to set a title
 as well. To explain to the viewer what kind of news you have
 selected for them to see.
 
-The feed is fetched for every view, so users are guaranteed
-up to date information. No local storage of feed is done.
+**Cache time:** The feeds are now fetched using WordPress 
+builtin MagpieRSS system, which allows for caching of feeds
+a specific number of seconds. Cached feeds are stored in
+the backend database.
+
 Clicking on a news item will of course take you via Google to
 the news site with the relevant article, as per Google Terms of Use.
 
@@ -100,14 +113,11 @@ wrapped in a div with the id "google-news-inline" and the
 widget is wrapped in an li with id "google-news". Let me 
 know if you need more to properly skin it.
 
-MINOR NOTE: If you upgrade from 1.0 then you will get the default
-"U.S. All" feed until you visit the configuration page for the
-first time. Once there, most of your old settings will automatically 
-be imported and used. Review and save and you should be good to go.
-
 **[Download now!](http://downloads.wordpress.org/plugin/google-news.zip)**
 
 [Support](http://www.kolbu.com/2008/04/07/google-news-plugin/)
+
+[Donate](http://www.kolbu.com/donations/)
 
 
 == Installation ==
@@ -117,15 +127,13 @@ This section describes how to install the plugin and get it working.
 e.g.
 
 1. Unzip into the `/wp-content/plugins/` directory
-1. Activate the plugin through the 'Plugins' menu in WordPress
-1. It now shows up both under available widgets and has its own configuration page under Dashboard Settings.
-
-The screenshots section has a picture of the configuration page. 
+1. Activate the plugin through the Dashboard->Plugins admin menu.
+1. See configuation pages under Dashboard->Settings, Dashboard->Manage and on the widget page.
 
 == Screenshots ==
 
 1. Widget in action under the Prosumer theme. Note the mouseover showing additional text from the news item.
-2. The admin options page of the widget.
+2. Small part of the admin Manage page for the plugin.
 3. Inline example under the Prosumer theme, replacing &lt;!--google-news--&gt; in content.
 
 == Changelog ==
@@ -138,3 +146,8 @@ The screenshots section has a picture of the configuration page.
     name space. Hopefully adhering to best practices plugin writing.
     Can now be used both as a widget and as inline content replacement.
 1. 2.0.1 Minor bugfix. Options were reset in some circumstances.
+1. 2.1 Major rewrite, again. 
+     Multiple feeds allowed. 
+     Using WP builtin RSS fetching and caching system. 
+     Shortcodes are supported. 
+     Rewrote more PHP5-only code, should now work fine with PHP4
