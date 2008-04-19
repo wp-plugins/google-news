@@ -130,6 +130,10 @@ e.g.
 1. Activate the plugin through the Dashboard->Plugins admin menu.
 1. See configuation pages under Dashboard->Settings, Dashboard->Manage and on the widget page.
 
+Note if you're upgrading from a previous release, there may be
+some strangeness the first time you edit an old feed. Try again
+and it will work. :-)
+
 == Screenshots ==
 
 1. Widget in action under the Prosumer theme. Note the mouseover showing additional text from the news item.
