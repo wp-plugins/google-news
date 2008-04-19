@@ -195,6 +195,11 @@ EOT;
 
             $alloptions = get_option('google_news');
 
+            $flipregions     = array_flip($this->regions);
+            $flipnewstypes   = array_flip($this->newstypes);
+            $flipoutputtypes = array_flip($this->outputtypes);
+            $flipdesctypes   = array_flip($this->desctypes);
+
             if ( is_array($_POST) && $_POST['google_news-submit'] ) {
 
                 $newoptions = array();
@@ -202,13 +207,14 @@ EOT;
 
                 $newoptions['name']       = $_POST['google_news-name'];
                 $newoptions['title']      = $_POST['google_news-title'];
-                $newoptions['region']     = $this->regions[$_POST['google_news-region']];
-                $newoptions['newstype']   = $this->newstypes[$_POST['google_news-newstype']];
+                $newoptions['region']     = $_POST['google_news-region'];
+                $newoptions['newstype']   = $_POST['google_news-newstype'];
                 $newoptions['outputtype'] = $this->outputtypes[$_POST['google_news-outputtype']];
                 $newoptions['desctype']   = $this->desctypes[$_POST['google_news-desctype']];
                 $newoptions['numnews']    = $_POST['google_news-numnews'];
                 $newoptions['query']      = $_POST['google_news-query'];
-                $newoptions['feedtype']   = $_POST['google_news-region'].' : '.$_POST['google_news-newstype'];
+                $newoptions['feedtype']   = $flipregions[$newoptions['region']].' : '.
+                                            $flipnewstypes[$newoptions['newstype']];
 
                 if ( $alloptions['feeds'][$id] == $newoptions ) {
                     $text = 'No change...';
@@ -314,13 +320,8 @@ EOT;
                 print '</th>';
                 print '   </tr>';
                 print '  </thead>';
-                if ( $alloptions['feeds'] ) {
+                if ( $alloptions['feeds'] || $newfeed ) {
                     $i = 0;
-
-                    $flipregions     = array_flip($this->regions);
-                    $flipnewstypes   = array_flip($this->newstypes);
-                    $flipoutputtypes = array_flip($this->outputtypes);
-                    $flipdesctypes   = array_flip($this->desctypes);
 
                     foreach ($alloptions['feeds'] as $key => $val) {
                         if ( $i % 2 == 0 ) {
@@ -339,13 +340,13 @@ EOT;
                             print '<td><select name="google_news-region">';
                             $region = $flipregions[$val['region']];
                             foreach ($this->regions as $k => $v) {
-                                print '<option '.(strcmp($k,$region)?'':'selected').' value="'.$k.'" >'.$k.'</option>';
+                                print '<option '.(strcmp($k,$region)?'':'selected').' value="'.$v.'" >'.$k.'</option>';
                             }
                             print '</select></td>';
                             print '<td><select name="google_news-newstype">';
                             $newstype = $flipnewstype[$val['newstype']];
                             foreach ($this->newstypes as $k => $v) {
-                                print '<option '.(strcmp($k,$newstype)?'':'selected').' value="'.$k.'" >'.$k.'</option>';
+                                print '<option '.(strcmp($k,$newstype)?'':'selected').' value="'.$v.'" >'.$k.'</option>';
                             }
                             print '</select></td>';
                             print '<td><select name="google_news-outputtype">';
@@ -400,12 +401,12 @@ EOT;
                         print '<td><select name="google_news-region">';
                         $region = 'U.S.';
                         foreach ($this->regions as $k => $v) {
-                            print '<option '.(strcmp($k,$region)?'':'selected').' value="'.$k.'" >'.$k.'</option>';
+                            print '<option '.(strcmp($k,$region)?'':'selected').' value="'.$v.'" >'.$k.'</option>';
                         }
                         print '</select></td>';
                         print '<td><select name="google_news-newstype">';
                         foreach ($this->newstypes as $k => $v) {
-                            print '<option value="'.$k.'" >'.$k.'</option>';
+                            print '<option value="'.$v.'" >'.$k.'</option>';
                         }
                         print '</select></td>';
                         print '<td><select name="google_news-outputtype">';
@@ -436,6 +437,9 @@ EOT;
                     print '<tr><td colspan="12" align="center"><b>';
                     print __('No feeds found(!)','google_news');
                     print '</b></td></tr>';
+                    print "</tr><tr><td colspan=\"12\"><a href=\"edit.php?page=google-news/google_news.php&amp;mode=newfeed\" class=\"newfeed\">";
+                    print __('Add feed','google_news');
+                    print "</a></td></tr>";
                 }
                 print ' </table>';
                 print '<h2>';
@@ -770,6 +774,7 @@ EOT;
             $options = get_option('google_news');
 
             if ( !is_array($options) ) {
+
                 // From 1.0
                 $oldoptions = get_option('widget_google_news_widget');
                 if ( is_array($oldoptions) ) {
