@@ -151,3 +151,11 @@ e.g.
      Using WP builtin RSS fetching and caching system. 
      Shortcodes are supported. 
      Rewrote more PHP5-only code, should now work fine with PHP4
+1. 2.1.1 Minor update to work around a bug in WordPress. Sorry
+     about the rapid fire.
+
+Known bugs:
+- WordPress will sometimes fail if it saves strings with 16-bit characters.
+  This will typically affect the storage/caching/retrieval of RSS feeds
+  containing such characters. I've registered that as a bug with WordPress,
+  and a release will be out if/when that is fixed.

@@ -209,8 +209,8 @@ EOT;
                 $newoptions['title']      = $_POST['google_news-title'];
                 $newoptions['region']     = $_POST['google_news-region'];
                 $newoptions['newstype']   = $_POST['google_news-newstype'];
-                $newoptions['outputtype'] = $this->outputtypes[$_POST['google_news-outputtype']];
-                $newoptions['desctype']   = $this->desctypes[$_POST['google_news-desctype']];
+                $newoptions['outputtype'] = $_POST['google_news-outputtype'];
+                $newoptions['desctype']   = $_POST['google_news-desctype'];
                 $newoptions['numnews']    = $_POST['google_news-numnews'];
                 $newoptions['query']      = $_POST['google_news-query'];
                 $newoptions['feedtype']   = $flipregions[$newoptions['region']].' : '.
@@ -338,27 +338,27 @@ EOT;
                             print '<td><input size="10" maxlength="20" id="google_news-name" name="google_news-name" type="text" value="'.$val['name'].'" /></td>';
                             print '<td><input size="20" maxlength="20" id="google_news-title" name="google_news-title" type="text" value="'.$val['title'].'" /></td>';
                             print '<td><select name="google_news-region">';
-                            $region = $flipregions[$val['region']];
+                            $region = $val['region'];
                             foreach ($this->regions as $k => $v) {
-                                print '<option '.(strcmp($k,$region)?'':'selected').' value="'.$v.'" >'.$k.'</option>';
+                                print '<option '.(strcmp($v,$region)?'':'selected').' value="'.$v.'" >'.$k.'</option>';
                             }
                             print '</select></td>';
                             print '<td><select name="google_news-newstype">';
-                            $newstype = $flipnewstype[$val['newstype']];
+                            $newstype = $val['newstype'];
                             foreach ($this->newstypes as $k => $v) {
-                                print '<option '.(strcmp($k,$newstype)?'':'selected').' value="'.$v.'" >'.$k.'</option>';
+                                print '<option '.(strcmp($v,$newstype)?'':'selected').' value="'.$v.'" >'.$k.'</option>';
                             }
                             print '</select></td>';
                             print '<td><select name="google_news-outputtype">';
-                            $outputtype = $flipnewstype[$val['outputtype']];
+                            $outputtype = $val['outputtype'];
                             foreach ($this->outputtypes as $k => $v) {
-                                print '<option '.(strcmp($k,$outputtype)?'':'selected').' value="'.$k.'" >'.$k.'</option>';
+                                print '<option '.(strcmp($v,$outputtype)?'':'selected').' value="'.$v.'" >'.$k.'</option>';
                             }
                             print '</select></td>';
                             print '<td><select name="google_news-desctype">';
-                            $desctype = $flipdesctype[$val['desctype']];
+                            $desctype = $val['desctype'];
                             foreach ($this->desctypes as $k => $v) {
-                                print '<option '.(strcmp($k,$desctype)?'':'selected').' value="'.$k.'" >'.$k.'</option>';
+                                print '<option '.(strcmp($v,$desctype)?'':'selected').' value="'.$v.'" >'.$k.'</option>';
                             }
                             print '</select></td>';
                             print '<td><input size="3" maxlength="3" id="google_news-numnews" name="google_news-numnews" type="text" value="'.$val['numnews'].'" /></td>';
@@ -399,9 +399,9 @@ EOT;
                         print '<td><input size="10" maxlength="20" id="google_news-name" name="google_news-name" type="text" value="NEW" /></td>';
                         print '<td><input size="20" maxlength="20" id="google_news-title" name="google_news-title" type="text" value="" /></td>';
                         print '<td><select name="google_news-region">';
-                        $region = 'U.S.';
+                        $region = 'us';
                         foreach ($this->regions as $k => $v) {
-                            print '<option '.(strcmp($k,$region)?'':'selected').' value="'.$v.'" >'.$k.'</option>';
+                            print '<option '.(strcmp($v,$region)?'':'selected').' value="'.$v.'" >'.$k.'</option>';
                         }
                         print '</select></td>';
                         print '<td><select name="google_news-newstype">';
@@ -411,12 +411,12 @@ EOT;
                         print '</select></td>';
                         print '<td><select name="google_news-outputtype">';
                         foreach ($this->outputtypes as $k => $v) {
-                            print '<option value="'.$k.'" >'.$k.'</option>';
+                            print '<option value="'.$v.'" >'.$k.'</option>';
                         }
                         print '</select></td>';
                         print '<td><select name="google_news-desctype">';
                         foreach ($this->desctypes as $k => $v) {
-                            print '<option value="'.$k.'" >'.$k.'</option>';
+                            print '<option value="'.$v.'" >'.$k.'</option>';
                         }
                         print '</select></td>';
                         print '<td><input size="3" maxlength="3" id="google_news-numnews" name="google_news-numnews" type="text" value="5" /></td>';
