@@ -132,7 +132,8 @@ e.g.
 
 Note if you're upgrading from a previous release, there may be
 some strangeness the first time you edit an old feed. Try again
-and it will work. :-)
+and it will work. Or delete the feed and create again, guaranteed
+fix. :-)
 
 == Screenshots ==
 
@@ -163,3 +164,6 @@ Known bugs:
   This will typically affect the storage/caching/retrieval of RSS feeds
   containing such characters. I've registered that as a bug with WordPress,
   and a release will be out if/when that is fixed.
+- Upgrading from 2.0.1/2.1 to 2.1.1 can cause irregularities the first time
+  you edit an existing feed. Delete the feed and create again, sorry about
+  the inconvenience.
