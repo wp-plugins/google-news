@@ -33,6 +33,7 @@ For widget use, simply use the widget as any other after
 selecting which feed it should display. For inline content
 replacement, insert the one or more of the following strings in 
 your content and they will be replaced by the relevant news feed.
+For theme use, add the do_action function call described below.
 
 1. **`<!--google-news-->`** for the default feed
 1. **`<!--google-news#feedname-->`**
@@ -54,7 +55,7 @@ Enable plugin, go to the Google News page under
 Dashboard->Settings and read the initial information. Then 
 go to the Google News page under Dashboard->Manage and 
 configure one or more feeds. Then use a widget or insert
-relevant strings in your content. 
+relevant strings in your content or theme. 
 
 Additional information:
 
