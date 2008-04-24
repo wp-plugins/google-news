@@ -1,8 +1,8 @@
 <?php
 /*
 Plugin Name: Google News
-Description: Displays a selectable Google News RSS feed, inline or widget
-Version:     2.1
+Description: Displays a selectable Google News RSS feed, inline, widget or in theme.
+Version:     2.2
 Author:      Olav Kolbu
 Author URI:  http://www.kolbu.com/
 Plugin URI:  http://wordpress.org/extend/plugins/google-news/
@@ -13,8 +13,6 @@ Minor parts of WordPress-specific code from various other GPL plugins.
 TODO: Multiple widget instances support (possibly)
       Internationalize more output
       See if nofollow should be added on links
-
-TOFIX: sporadic unserialized ?
 */
 /*
 Copyright (C) 2008 kolbu.com (olav AT kolbu DOT com)
@@ -33,8 +31,9 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
 include_once(ABSPATH . WPINC . '/rss.php');
+
+global $google_news_instance;
 
 if ( ! class_exists('google_news_plugin')) {
     class google_news_plugin {
@@ -137,6 +136,9 @@ if ( ! class_exists('google_news_plugin')) {
             add_action('admin_menu', array(&$this, 'admin_menu'));
             add_action('plugins_loaded', array(&$this, 'widget_init'));
 
+            // Hook for theme coders/hackers
+            add_action('google_news', array(&$this, 'display_feed'));
+
             // Makes it backwards compat pre-2.5 I hope
             if ( function_exists('add_shortcode') ) {
                 add_shortcode('google-news', array(&$this, 'my_shortcode_handler'));
@@ -164,9 +166,9 @@ if ( ! class_exists('google_news_plugin')) {
             <div class="wrap">
             <h2>Google News</h2>
             <p>This plugin allows you to define a number of Google News 
-               feeds and have them displayed
-               anywhere in content or in a widget. Any number of inline 
-               replacements can be made, but only one widget instance is
+               feeds and have them displayed anywhere in content, in a widget
+               or in a theme. Any number of inline replacements or theme
+               inserts can be made, but only one widget instance is
                permitted in this release. To use the feeds insert one or more
                of the following special html comments or Shortcodes 
                anywhere in user content. Note that Shortcodes, i.e. the
@@ -176,6 +178,8 @@ if ( ! class_exists('google_news_plugin')) {
                <li><b>&lt;--google-news#feedname--&gt</b></li>
                <li><b>[google-news]</b> (also for default feed)</li>
                <li><b>[google-news name="feedname"]</b></li></ul><p>
+               To insert in a theme call <b>do_action('google_news');</b> or 
+               alternatively <b>do_action('google_news', 'feedname');</b><p>
                To manage feeds, go to <a href="edit.php?page=google-news/google_news.php">Manage -> Google News</a>, where you will also find more information.<p>
                <a href="http://www.kolbu.com/donations/">Donations Page</a>... ;-)<p>
                <a href="http://www.kolbu.com/2008/04/07/google-news-plugin/">Widget Home Page</a>, leave a comment if you have questions etc.<p>
@@ -465,7 +469,9 @@ EOT;
                 print ' The one(s) without a name will be treated as the default feed(s), i.e. used for <b>&lt;!--google_news--&gt;</b> ';
                 print ' or widget feed type <b>*DEFAULT*</b>. If you have Wordpress 2.5 ';
                 print ' or above, you can also use Shortcodes on the form <b>[google-news]</b> ';
-                print ' (for default feed) or <b>[google-news name="feedname"]</b></td></tr>';
+                print ' (for default feed) or <b>[google-news name="feedname"]</b>. And finally ';
+                print ' you can use <b>do_action(\'google_news\');</b> or <b>do_action(\'google_news\', \'feedname\');</b> ';
+                print ' in themes.</td></tr>';
                 print '<tr><td><b>Admin-defined title</b></td><td>Optional feed title. If not set, a reasonable title based on ';
                 print 'Region and Type will be used. Note Google Terms of Service require you to show that the feeds come from ';
                 print 'Google News.</td></tr>';
@@ -488,6 +494,11 @@ EOT;
         }
 
         // ************* Output *****************
+
+        // The function that gets called from themes
+        function display_feed($data) {
+            print $this->random_feed($data);
+        }
 
         // Callback for inline replacement
         function insert_news($data) {
@@ -625,8 +636,13 @@ EOT;
                 $feedurl .= "&topic=$newstype";
             }
             if ( strlen($query) ) {
-                $squery = urlencode(strtolower($query));
-                $feedurl .= "&q=$squery";
+                if ( substr($query,0,3) == 'OR ' ) {
+                    $squery = urlencode(strtolower(substr($query,3)));
+                    $feedurl .= "&as_oq=$squery";
+                } else {
+                    $squery = urlencode(strtolower($query));
+                    $feedurl .= "&q=$squery";
+                }
             }
 
             // Using the WP RSS fetcher (MagpieRSS). It has serious
@@ -638,7 +654,6 @@ EOT;
             $rss = fetch_rss($feedurl);
 
             if ( ! is_object($rss) ) {
-            // if ( 1 ) {
                 return 'Google News unavailable</ul>';
             }
             $rss->items = array_slice($rss->items, 0, $numnews);
@@ -789,9 +804,9 @@ EOT;
                     $tmpfeed['newstype']   = $oldoptions['newstype'];
                     $tmpfeed['outputtype'] = $oldoptions['outputtype'];
                     $tmpfeed['query']      = $oldoptions['query'];
-                    $tmpfeed['feedtype']   = $flipregions[$tmpfeed['newstype']].
+                    $tmpfeed['feedtype']   = $flipregions[$tmpfeed['region']].
                                              ' : '.
-                                             $flipnewstypes[$tmpfeed['outputtype']];
+                                             $flipnewstypes[$tmpfeed['newstype']];
 
                     $options = array();
                     $options['feeds']     = array( $tmpfeed );
@@ -837,7 +852,7 @@ EOT;
     }
 
     // Instantiate
-    $gn &= new google_news_plugin();
+    $google_news_instance &= new google_news_plugin();
 
 }
 ?>

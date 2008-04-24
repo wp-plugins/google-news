@@ -6,8 +6,9 @@ Requires at least: 2.3.3
 Tested up to: 2.5
 Stable tag: trunk
 
-Displays N first news items from a selectable Google News 
-RSS feed, inline or as a widget. Now with multiple feeds.
+Displays news items from selectable Google News RSS feeds, 
+inline, as a widget or in a theme. Multiple 
+simultaneous feeds allowed. Query filters and caching.
 
 == Description ==
 
@@ -23,24 +24,31 @@ query will be shown. Note that not all combinations of
 region/language and topic has been enabled by Google but
 it should degrade gracefully.
 
-This plugin works both as a widget and as inline content
-replacement. Any number of different feeds can be used
-as inline replacements at the same time, but only one widget 
-instance is supported in this release.
+This plugin works both as a widget, as inline content
+replacement and can be called from themes. Any number of 
+inline replacements or theme calls allowed, but only one 
+widget instance is supported in this release.
 
 For widget use, simply use the widget as any other after
 selecting which feed it should display. For inline content
 replacement, insert the one or more of the following strings in 
 your content and they will be replaced by the relevant news feed.
 
-1. **&lt;!--google-news--&gt;** (i.e. <!--google-news-->) for the default feed
-1. **&lt;!--google-news#feedname--&gt;** (i.e. <!--google-news#feedname-->)
+1. **`<!--google-news-->`** for the default feed
+1. **`<!--google-news#feedname-->`**
 
 Shortcodes can be used if you have WordPress 2.5 or above,
 in which case these replacement methods are also available.
 
 1. **[google-news]** for the default feed
 1. **[google-news name="feedname"]**
+
+Calling the plugin from a theme is done with the WP do_action()
+system. This will degrade gracefully and not produce errors
+or output if plugin is disabled or removed.
+
+1. **`<?php do_action('google_news'); ?>`** for the default feed
+1. **`<?php do_action('google_news', 'feedname'); ?>`**
 
 Enable plugin, go to the Google News page under 
 Dashboard->Settings and read the initial information. Then 
@@ -98,7 +106,15 @@ search query, then the short item length will include an
 "all N news articles" link curtesy Google. If you choose
 to add a query, then you most likely want to set a title
 as well. To explain to the viewer what kind of news you have
-selected for them to see.
+selected for them to see. The News Query isn't like a standard
+Google Query, so you can't use || between words to search
+for one or the other. So IFF you start your query with
+the word **OR** then the rest of the words will be or'ed
+together. I.e. a query string of 'OR this that' will look
+for news containing either this or that. This is really 
+just a test, so the actual query language used here may change in 
+future versions. 
+
 
 **Cache time:** The feeds are now fetched using WordPress 
 builtin MagpieRSS system, which allows for caching of feeds
@@ -156,14 +172,14 @@ fix. :-)
      Using WP builtin RSS fetching and caching system. 
      Shortcodes are supported. 
      Rewrote more PHP5-only code, should now work fine with PHP4
-1. 2.1.1 Minor update to work around a bug in WordPress. Sorry
-     about the rapid fire.
+1. 2.2 Queries starting with OR will use remaining words in query
+     as ORed search. I.e. 'OR this that' will search for this or that.
+     Ability to call plugin from a theme.
+     Bugfixes for admins with db table character sets not matching that
+     of their WordPress install.
+
 
 Known bugs:
-- WordPress will sometimes fail if it saves strings with 16-bit characters.
-  This will typically affect the storage/caching/retrieval of RSS feeds
-  containing such characters. I've registered that as a bug with WordPress,
-  and a release will be out if/when that is fixed.
 - Upgrading from 2.0.1/2.1 to 2.1.1 can cause irregularities the first time
   you edit an existing feed. Delete the feed and create again, sorry about
   the inconvenience.
