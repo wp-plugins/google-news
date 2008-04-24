@@ -180,6 +180,4 @@ fix. :-)
 
 
 Known bugs:
-- Upgrading from 2.0.1/2.1 to 2.1.1 can cause irregularities the first time
-  you edit an existing feed. Delete the feed and create again, sorry about
-  the inconvenience.
+  - None at this time
