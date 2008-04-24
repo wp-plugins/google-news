@@ -7,8 +7,8 @@ Tested up to: 2.5
 Stable tag: trunk
 
 Displays news items from selectable Google News RSS feeds, 
-inline, as a widget or in a theme. Multiple 
-simultaneous feeds allowed. Query filters and caching.
+inline, as a widget or in a theme. Multiple feeds allowed. 
+Query filters and caching.
 
 == Description ==
 
@@ -40,8 +40,8 @@ your content and they will be replaced by the relevant news feed.
 Shortcodes can be used if you have WordPress 2.5 or above,
 in which case these replacement methods are also available.
 
-1. **[google-news]** for the default feed
-1. **[google-news name="feedname"]**
+1. **`[google-news]`** for the default feed
+1. **`[google-news name="feedname"]`**
 
 Calling the plugin from a theme is done with the WP do_action()
 system. This will degrade gracefully and not produce errors
