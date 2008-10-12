@@ -178,7 +178,8 @@ fix. :-)
      Ability to call plugin from a theme.
      Bugfixes for admins with db table character sets not matching that
      of their WordPress install.
-
+1. 2.3 Fixed problems when plugin was used in themes
 
 Known bugs:
   - None at this time
+  - Unconfigured feeds are not wrapped in matching html containers. </li?>

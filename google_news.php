@@ -2,7 +2,7 @@
 /*
 Plugin Name: Google News
 Description: Displays a selectable Google News RSS feed, inline, widget or in theme.
-Version:     2.2
+Version:     2.3
 Author:      Olav Kolbu
 Author URI:  http://www.kolbu.com/
 Plugin URI:  http://wordpress.org/extend/plugins/google-news/
@@ -497,7 +497,10 @@ EOT;
 
         // The function that gets called from themes
         function display_feed($data) {
+	    global $settings;
+	    $settings = get_option('google_news');
             print $this->random_feed($data);
+            unset($settings);
         }
 
         // Callback for inline replacement
