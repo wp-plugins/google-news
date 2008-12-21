@@ -2,7 +2,7 @@
 /*
 Plugin Name: Google News
 Description: Displays a selectable Google News RSS feed, inline, widget or in theme.
-Version:     2.3
+Version:     2.4
 Author:      Olav Kolbu
 Author URI:  http://www.kolbu.com/
 Plugin URI:  http://wordpress.org/extend/plugins/google-news/
@@ -162,6 +162,11 @@ if ( ! class_exists('google_news_plugin')) {
         // Settings -> Google News
         function plugin_options() {
 
+           if (get_bloginfo('version') >= '2.7') {
+               $manage_page = 'tools.php';
+            } else {
+               $manage_page = 'edit.php';
+            }
             print <<<EOT
             <div class="wrap">
             <h2>Google News</h2>
@@ -180,7 +185,7 @@ if ( ! class_exists('google_news_plugin')) {
                <li><b>[google-news name="feedname"]</b></li></ul><p>
                To insert in a theme call <b>do_action('google_news');</b> or 
                alternatively <b>do_action('google_news', 'feedname');</b><p>
-               To manage feeds, go to <a href="edit.php?page=google-news/google_news.php">Manage -> Google News</a>, where you will also find more information.<p>
+               To manage feeds, go to <a href="$manage_page?page=google-news/google_news.php">Manage -> Google News</a>, where you will also find more information.<p>
                <a href="http://www.kolbu.com/donations/">Donations Page</a>... ;-)<p>
                <a href="http://www.kolbu.com/2008/04/07/google-news-plugin/">Widget Home Page</a>, leave a comment if you have questions etc.<p>
                <a href="http://www.google.com/support/news/bin/answer.py?hl=en&answer=59255">Google Terms Of Use</a><p>
@@ -324,6 +329,13 @@ EOT;
                 print '</th>';
                 print '   </tr>';
                 print '  </thead>';
+
+                if (get_bloginfo('version') >= '2.7') {
+                    $manage_page = 'tools.php';
+                } else {
+                    $manage_page = 'edit.php';
+                }
+
                 if ( $alloptions['feeds'] || $newfeed ) {
                     $i = 0;
 
@@ -382,10 +394,10 @@ EOT;
                             print "<td>".$flipdesctypes[$val['desctype']]."</td>";
                             print "<td>".$val['numnews']."</td>";
                             print "<td>".$val['query']."</td>";
-                            print "<td><a href=\"edit.php?page=google-news/google_news.php&amp;mode=edit&amp;id=$key\" class=\"edit\">";
+                            print "<td><a href=\"$manage_page?page=google-news/google_news.php&amp;mode=edit&amp;id=$key\" class=\"edit\">";
                             print __('Edit','google_news');
                             print "</a></td>\n";
-                            print "<td><a href=\"edit.php?page=google-news/google_news.php&amp;mode=delete&amp;id=$key\" class=\"delete\" onclick=\"javascript:check=confirm( '".__("This feed entry will be erased. Delete?",'google_news')."');if(check==false) return false;\">";
+                            print "<td><a href=\"$manage_page?page=google-news/google_news.php&amp;mode=delete&amp;id=$key\" class=\"delete\" onclick=\"javascript:check=confirm( '".__("This feed entry will be erased. Delete?",'google_news')."');if(check==false) return false;\">";
                             print __('Delete', 'google_news');
                             print "</a></td>\n";
                         }
@@ -432,7 +444,7 @@ EOT;
                         print "<input type=\"hidden\" id=\"google_news-submit\" name=\"google_news-submit\" value=\"1\" />";
                         print "</form>";
                     } else {
-                        print "</tr><tr><td colspan=\"12\"><a href=\"edit.php?page=google-news/google_news.php&amp;mode=newfeed\" class=\"newfeed\">";
+                        print "</tr><tr><td colspan=\"12\"><a href=\"$manage_page?page=google-news/google_news.php&amp;mode=newfeed\" class=\"newfeed\">";
                         print __('Add extra feed','google_news');
                         print "</a></td></tr>";
 
@@ -441,7 +453,7 @@ EOT;
                     print '<tr><td colspan="12" align="center"><b>';
                     print __('No feeds found(!)','google_news');
                     print '</b></td></tr>';
-                    print "</tr><tr><td colspan=\"12\"><a href=\"edit.php?page=google-news/google_news.php&amp;mode=newfeed\" class=\"newfeed\">";
+                    print "</tr><tr><td colspan=\"12\"><a href=\"$manage_page?page=google-news/google_news.php&amp;mode=newfeed\" class=\"newfeed\">";
                     print __('Add feed','google_news');
                     print "</a></td></tr>";
                 }

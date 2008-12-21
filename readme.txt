@@ -3,7 +3,7 @@ Contributors: Olav Kolbu
 Donate link: http://www.kolbu.com/donations/
 Tags: widget, plugin, google, news, google news, rss, feed
 Requires at least: 2.3.3
-Tested up to: 2.5
+Tested up to: 2.7
 Stable tag: trunk
 
 Displays news items from selectable Google News RSS feeds, 
@@ -179,6 +179,7 @@ fix. :-)
      Bugfixes for admins with db table character sets not matching that
      of their WordPress install.
 1. 2.3 Fixed problems when plugin was used in themes
+1. 2.4 Fixed WP 2.7 compat problems
 
 Known bugs:
   - None at this time
