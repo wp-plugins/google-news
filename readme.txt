@@ -3,7 +3,7 @@ Contributors: Olav Kolbu
 Donate link: http://www.kolbu.com/donations/
 Tags: widget, plugin, google, news, google news, rss, feed
 Requires at least: 2.3.3
-Tested up to: 2.5
+Tested up to: 2.8.1
 Stable tag: trunk
 
 Displays news items from selectable Google News RSS feeds, 
@@ -145,7 +145,7 @@ e.g.
 
 1. Unzip into the `/wp-content/plugins/` directory
 1. Activate the plugin through the Dashboard->Plugins admin menu.
-1. See configuation pages under Dashboard->Settings, Dashboard->Manage and on the widget page.
+1. See configuation pages under Dashboard->Settings, Dashboard->Tools and on the widget page.
 
 Note if you're upgrading from a previous release, there may be
 some strangeness the first time you edit an old feed. Try again
@@ -178,7 +178,11 @@ fix. :-)
      Ability to call plugin from a theme.
      Bugfixes for admins with db table character sets not matching that
      of their WordPress install.
-
+1. 2.3 Fixed problems when plugin was used in themes
+1. 2.4 Fixed WP 2.7 compat problems
+1. 2.4.1 Fixed minor markup glitch
+1. 2.5 Added 25 new languages/locations
 
 Known bugs:
   - None at this time
+  - Unconfigured feeds are not wrapped in matching html containers. </li?>
