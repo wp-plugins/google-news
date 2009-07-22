@@ -2,20 +2,20 @@
 /*
 Plugin Name: Google News
 Description: Displays a selectable Google News RSS feed, inline, widget or in theme.
-Version:     2.2
+Version:     2.5.1
 Author:      Olav Kolbu
 Author URI:  http://www.kolbu.com/
-Plugin URI:  http://wordpress.org/extend/plugins/google-news/
+Plugin URI:  http://www.kolbu.com/2008/04/07/google-news-plugin/
 License:     GPL
 
 Minor parts of WordPress-specific code from various other GPL plugins.
 
 TODO: Multiple widget instances support (possibly)
       Internationalize more output
-      See if nofollow should be added on links
+      See if nofollow can/should be added on links
 */
 /*
-Copyright (C) 2008 kolbu.com (olav AT kolbu DOT com)
+Copyright (C) 2009 kolbu.com (olav AT kolbu DOT com)
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -42,47 +42,72 @@ if ( ! class_exists('google_news_plugin')) {
         var $settings;
 
         var $regions = array(
-            'South Africa' => 'en_za',
+            'Australia' => 'au',
+            'India' => 'in',
+            'Israel' => 'en_il',
+            'Malaysia' => 'en_my',
+            'New Zealand' => 'nz',
+            'Pakistan' => 'en_pk',
+            'Philippines' => 'en_ph',
+            'Singapore' => 'en_sg',
+            '&#1575;&#1604;&#1593;&#1575;&#1604;&#1605; &#1575;&#1604;&#1593;&#1585;&#1576;&#1610; (Arabic)' => 'ar_me',
             '&#20013;&#22269;&#29256; (China)' => 'cn',
             '&#39321;&#28207;&#29256; (Hong Kong)' => 'hk',
-            '&#2320;&#2337;&#2381;&#2344;&#2368; (Hindi)' => 'hi_in',
-            'India' => 'in',
+            '&#2349;&#2366;&#2352;&#2340; (India)' => 'hi_in',
+            '&#2980;&#2990;&#3007;&#2996;&#3021; (India)' => 'ta_in',
+            '&#3374;&#3378;&#3375;&#3390;&#3379;&#3330; (India)' => 'ml_in',
+            '&#3108;&#3142;&#3122;&#3137;&#3095;&#3137; (India)' => 'te_in',
+            '&#1497;&#1513;&#1512;&#1488;&#1500; (Israel)' => 'iw_il',
             '&#26085;&#26412; (Japan)' => 'jp',
             '&#54620;&#44397; (Korea)' => 'kr',
             '&#21488;&#28771;&#29256; (Taiwan)' => 'tw',
-            '&#1497;&#1513;&#1512;&#1488;&#1500; (Israel)' => 'iw_il',
-            '&#1575;&#1604;&#1593;&#1575;&#1604;&#1605; &#1575;&#1604;&#1593;&#1585;&#1576;&#1610; (Arabic)' => 'ar_me',
-            '&#1056;&#1086;&#1089;&#1089;&#1080;&#1103; (Russia)' => 'ru_ru',
-            'Australia' => 'au',
-            'New Zealand' => 'nz',
+	    'Việt Nam (Vietnam)' => 'vi_vn',
+            '-------------' => 'us',
             'België' => 'nl_be',
             'Belgique' => 'fr_be',
+            'Botswana' => 'en_bw',
             'Česká republika' => 'cs_cz',
             'Deutschland' => 'de',
             'España' => 'es',
+            'Ethiopia' => 'en_et',
             'France' => 'fr',
-            'Greece' => 'el_gr',
+            'Ghana' => 'en_gh',
             'Ireland' => 'en_ie',
             'Italia' => 'it',
+            'Kenya' => 'en_ke',
+            'Magyarország' => 'hu_hu',
+            'Namibia' => 'en_na',
             'Nederland' => 'nl_nl',
+            'Nigeria' => 'en_ng',
             'Norge' => 'no_no',
             'Österreich' => 'de_at',
+            'Polska' => 'pl_pl',
             'Portugal' => 'pt:PT_pt',
             'Schweiz' => 'de_ch',
+            'South Africa' => 'en_za',
             'Suisse' => 'fr_ch',
             'Sverige' => 'sv_se',
+            'Tanzania' => 'en_tz',
+            'Türkiye' => 'tr_tr',
+            'Uganda' => 'en_ug',
             'U.K.' => 'uk',
-            'Canada English' => 'ca',
-            'Canada Français' => 'fr_ca',
-            'Estados Unidos' => 'es_us',
-            'México' => 'es_mx',
-            'U.S.' => 'us',
+            'Zimbabwe' => 'en_zw',
+            '&#917;&#955;&#955;&#940;&#948;&#945; (Greece)' => 'el_gr',
+            '&#1056;&#1086;&#1089;&#1089;&#1080;&#1103; (Russia)' => 'ru_ru',
+	    '&#1059;&#1082;&#1088;&#1072;&#1080;&#1085;&#1072; (Ukraine)' => 'ru_ua',
+	    '&#1059;&#1082;&#1088;&#1072;&#1111;&#1085;&#1072; (Ukraine)' => 'uk_ua',
+            '------------' => 'us',
             'Argentina' => 'es_ar',
             'Brasil' => 'pt:BR_br',
+            'Canada English' => 'ca',
+            'Canada Français' => 'fr_ca',
             'Chile' => 'es_cl',
             'Colombia' => 'es_co',
             'Cuba' => 'es_cu',
+            'Estados Unidos' => 'es_us',
+            'México' => 'es_mx',
             'Perú' => 'es_pe',
+            'U.S.' => 'us',
             'Venezuela' => 'es_ve',
         );
 
@@ -162,6 +187,11 @@ if ( ! class_exists('google_news_plugin')) {
         // Settings -> Google News
         function plugin_options() {
 
+           if (get_bloginfo('version') >= '2.7') {
+               $manage_page = 'tools.php';
+            } else {
+               $manage_page = 'edit.php';
+            }
             print <<<EOT
             <div class="wrap">
             <h2>Google News</h2>
@@ -180,7 +210,7 @@ if ( ! class_exists('google_news_plugin')) {
                <li><b>[google-news name="feedname"]</b></li></ul><p>
                To insert in a theme call <b>do_action('google_news');</b> or 
                alternatively <b>do_action('google_news', 'feedname');</b><p>
-               To manage feeds, go to <a href="edit.php?page=google-news/google_news.php">Manage -> Google News</a>, where you will also find more information.<p>
+               To manage feeds, go to <a href="$manage_page?page=google-news/google_news.php">Manage -> Google News</a>, where you will also find more information.<p>
                <a href="http://www.kolbu.com/donations/">Donations Page</a>... ;-)<p>
                <a href="http://www.kolbu.com/2008/04/07/google-news-plugin/">Widget Home Page</a>, leave a comment if you have questions etc.<p>
                <a href="http://www.google.com/support/news/bin/answer.py?hl=en&answer=59255">Google Terms Of Use</a><p>
@@ -324,6 +354,13 @@ EOT;
                 print '</th>';
                 print '   </tr>';
                 print '  </thead>';
+
+                if (get_bloginfo('version') >= '2.7') {
+                    $manage_page = 'tools.php';
+                } else {
+                    $manage_page = 'edit.php';
+                }
+
                 if ( $alloptions['feeds'] || $newfeed ) {
                     $i = 0;
 
@@ -382,10 +419,10 @@ EOT;
                             print "<td>".$flipdesctypes[$val['desctype']]."</td>";
                             print "<td>".$val['numnews']."</td>";
                             print "<td>".$val['query']."</td>";
-                            print "<td><a href=\"edit.php?page=google-news/google_news.php&amp;mode=edit&amp;id=$key\" class=\"edit\">";
+                            print "<td><a href=\"$manage_page?page=google-news/google_news.php&amp;mode=edit&amp;id=$key\" class=\"edit\">";
                             print __('Edit','google_news');
                             print "</a></td>\n";
-                            print "<td><a href=\"edit.php?page=google-news/google_news.php&amp;mode=delete&amp;id=$key\" class=\"delete\" onclick=\"javascript:check=confirm( '".__("This feed entry will be erased. Delete?",'google_news')."');if(check==false) return false;\">";
+                            print "<td><a href=\"$manage_page?page=google-news/google_news.php&amp;mode=delete&amp;id=$key\" class=\"delete\" onclick=\"javascript:check=confirm( '".__("This feed entry will be erased. Delete?",'google_news')."');if(check==false) return false;\">";
                             print __('Delete', 'google_news');
                             print "</a></td>\n";
                         }
@@ -432,7 +469,7 @@ EOT;
                         print "<input type=\"hidden\" id=\"google_news-submit\" name=\"google_news-submit\" value=\"1\" />";
                         print "</form>";
                     } else {
-                        print "</tr><tr><td colspan=\"12\"><a href=\"edit.php?page=google-news/google_news.php&amp;mode=newfeed\" class=\"newfeed\">";
+                        print "</tr><tr><td colspan=\"12\"><a href=\"$manage_page?page=google-news/google_news.php&amp;mode=newfeed\" class=\"newfeed\">";
                         print __('Add extra feed','google_news');
                         print "</a></td></tr>";
 
@@ -441,7 +478,7 @@ EOT;
                     print '<tr><td colspan="12" align="center"><b>';
                     print __('No feeds found(!)','google_news');
                     print '</b></td></tr>';
-                    print "</tr><tr><td colspan=\"12\"><a href=\"edit.php?page=google-news/google_news.php&amp;mode=newfeed\" class=\"newfeed\">";
+                    print "</tr><tr><td colspan=\"12\"><a href=\"$manage_page?page=google-news/google_news.php&amp;mode=newfeed\" class=\"newfeed\">";
                     print __('Add feed','google_news');
                     print "</a></td></tr>";
                 }
@@ -497,7 +534,10 @@ EOT;
 
         // The function that gets called from themes
         function display_feed($data) {
+	    global $settings;
+	    $settings = get_option('google_news');
             print $this->random_feed($data);
+            unset($settings);
         }
 
         // Callback for inline replacement
@@ -758,7 +798,7 @@ EOT;
             }
 
             $result = '<!-- Start Google News code -->';
-            $result .= "<div id=\"google-news-inline\"><h3>$title</h4>";
+            $result .= "<div id=\"google-news-inline\"><h3>$title</h3>";
             $result .= $this->get_feed($feed, $settings['cachetime']);
             $result .= '</div><!-- End Google News code -->';
             return $result;
