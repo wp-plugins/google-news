@@ -3,7 +3,7 @@ Contributors: Olav Kolbu
 Donate link: http://www.kolbu.com/donations/
 Tags: widget, plugin, google, news, google news, rss, feed
 Requires at least: 2.3.3
-Tested up to: 2.8.1
+Tested up to: 2.8.2
 Stable tag: trunk
 
 Displays news items from selectable Google News RSS feeds, 
@@ -160,29 +160,36 @@ fix. :-)
 
 == Changelog ==
 
-1. 1.0 Initial release
-1. 1.1 Removed dependency on PHP 5.1++ functionality.
-    Fixed UTF8-related bugs. 
-    - Not a public release.
-1. 2.0 Rewritten from scratch. Now uses a class to avoid polluting the 
-    name space. Hopefully adhering to best practices plugin writing.
-    Can now be used both as a widget and as inline content replacement.
-1. 2.0.1 Minor bugfix. Options were reset in some circumstances.
-1. 2.1 Major rewrite, again. 
-     Multiple feeds allowed. 
-     Using WP builtin RSS fetching and caching system. 
-     Shortcodes are supported. 
-     Rewrote more PHP5-only code, should now work fine with PHP4
-1. 2.2 Queries starting with OR will use remaining words in query
-     as ORed search. I.e. 'OR this that' will search for this or that.
-     Ability to call plugin from a theme.
-     Bugfixes for admins with db table character sets not matching that
-     of their WordPress install.
-1. 2.3 Fixed problems when plugin was used in themes
-1. 2.4 Fixed WP 2.7 compat problems
-1. 2.4.1 Fixed minor markup glitch
-1. 2.5 Added 25 new languages/locations
-
-Known bugs:
-  - None at this time
-  - Unconfigured feeds are not wrapped in matching html containers. </li?>
+= 2.5.1 =
+* Plugin disappeared from WP.org, maybe this upgrade will reinstate
+* Converted to new ChangeLog syntax
+* No other changes from 2.5
+= 2.5 =
+* Added 25 new languages/locations
+= 2.4.1 =
+* Fixed minor markup glitch
+= 2.4 =
+* Fixed WP 2.7 compat problems
+= 2.3 =
+* Fixed problems when plugin was used in themes
+= 2.2 =
+* Queries starting with OR will use remaining words in query as ORed search. I.e. 'OR this that' will search for this or that.
+* Ability to call plugin from a theme.
+* Bugfixes for admins with db table character sets not matching that of their WordPress install.
+= 2.1 =
+* Major rewrite, again. 
+* Multiple feeds allowed. 
+* Using WP builtin RSS fetching and caching system. 
+* Shortcodes are supported. 
+* Rewrote more PHP5-only code, should now work fine with PHP4
+= 2.0.1 =
+* Minor bugfix. Options were reset in some circumstances.
+= 2.0 =
+* Rewritten from scratch. Now uses a class to avoid polluting the name space. Hopefully adhering to best practices plugin writing.
+* Can now be used both as a widget and as inline content replacement.
+= 1.1 =
+* Removed dependency on PHP 5.1++ functionality.
+* Fixed UTF8-related bugs. 
+* - Not a public release.
+= 1.0 =
+* Initial release

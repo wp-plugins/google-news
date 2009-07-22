@@ -2,7 +2,7 @@
 /*
 Plugin Name: Google News
 Description: Displays a selectable Google News RSS feed, inline, widget or in theme.
-Version:     2.5
+Version:     2.5.1
 Author:      Olav Kolbu
 Author URI:  http://www.kolbu.com/
 Plugin URI:  http://www.kolbu.com/2008/04/07/google-news-plugin/
@@ -12,10 +12,10 @@ Minor parts of WordPress-specific code from various other GPL plugins.
 
 TODO: Multiple widget instances support (possibly)
       Internationalize more output
-      See if nofollow should be added on links
+      See if nofollow can/should be added on links
 */
 /*
-Copyright (C) 2008 kolbu.com (olav AT kolbu DOT com)
+Copyright (C) 2009 kolbu.com (olav AT kolbu DOT com)
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
